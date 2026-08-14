@@ -145,6 +145,30 @@
     font-family:'IBM Plex Mono',monospace;
     font-size:.76rem; color:#9aa1ad; pointer-events:none;
   }
+  .checkbox-field{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .checkbox-label{
+    display:flex !important;
+    align-items:center;
+    gap:.55rem;
+    font-size:.86rem !important;
+    font-weight:500 !important;
+    text-transform:none !important;
+    letter-spacing:0 !important;
+    color:var(--ink) !important;
+    cursor:pointer;
+    margin-bottom:0 !important;
+  }
+  .checkbox-label input[type="checkbox"]{
+    width:20px; height:20px;
+    min-height:0;
+    flex-shrink:0;
+    accent-color:var(--rail);
+    cursor:pointer;
+  }
 
   /* SUMMARY CARDS */
   .summary-row{
@@ -369,6 +393,13 @@
           </div>
           <span class="hint">Quilometratge total abans de donar de baixa el cotxe</span>
         </div>
+        <div class="field checkbox-field">
+          <label class="checkbox-label" for="includeDep">
+            <input type="checkbox" id="includeDep" checked>
+            <span>Incloure depreciació del vehicle</span>
+          </label>
+          <span class="hint">Si ho desmarques, el cost del cotxe només compta el carburant</span>
+        </div>
         <div class="field">
           <label for="zonePrice">Preu per zona (T10)</label>
           <div class="unit" data-unit="€/zona"><input type="number" id="zonePrice" value="0.70" step="0.05"></div>
@@ -464,12 +495,13 @@ function compute(){
   const carValue = parseFloat(document.getElementById('carValue').value) || 0;
   const carKmNow = parseFloat(document.getElementById('carKm').value) || 0;
   const lifeKm = parseFloat(document.getElementById('lifeKm').value) || 1;
+  const includeDep = document.getElementById('includeDep').checked;
   const zonePrice = parseFloat(document.getElementById('zonePrice').value) || 0;
   const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
   const parking = parseFloat(document.getElementById('parking').value) || 0;
 
   const remainingLife = Math.max(lifeKm - carKmNow, 1000); // floor to avoid absurd spikes
-  const depPerKm = carValue / remainingLife;
+  const depPerKm = includeDep ? (carValue / remainingLife) : 0;
   const fuelPerKm = (consumption/100) * fuelPrice;
   const carCostPerKm = depPerKm + fuelPerKm;
 
@@ -539,7 +571,10 @@ function compute(){
   `).join('');
 }
 
-document.querySelectorAll('#inputs input').forEach(el => el.addEventListener('input', compute));
+document.querySelectorAll('#inputs input').forEach(el => {
+  el.addEventListener('input', compute);
+  el.addEventListener('change', compute);
+});
 compute();
 </script>
 
