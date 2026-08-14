@@ -450,7 +450,7 @@
 
 <footer>
   <p><b>Font dels temps de tren:</b> horari oficial de la línia R5 de FGC (Barcelona Pl. Espanya – Manresa), tram Sant Vicenç | Castellgalí – Europa | Fira.</p>
-  <p><b>Zones tarifàries (revisat):</b> Sant Andreu de la Barca, Pallejà, Quatre Camins, Can Ros, Sant Vicenç dels Horts, Molí Nou, Sant Boi, Cornellà Riera, Almeda, L'Hospitalet Av. Carrilet, Sant Josep, Gornal i Europa | Fira compten com a <b>zona 1</b> perquè són municipis de l'Àrea Metropolitana de Barcelona (AMB) i s'hi aplica la <i>tarifa metropolitana</i> (TMB/ATM), encara que el seu sector nominal sigui superior. Martorell (El Palau, Martorell Central, Martorell Enllaç) queda fora d'aquesta excepció i s'assigna a <b>zona 2</b>. Abrera i Olesa de Montserrat a <b>zona 3</b>; Montserrat-Aeri, Monistrol de Montserrat i Castellbell i el Vilar a <b>zona 4</b>; Sant Vicenç | Castellgalí a <b>zona 5</b> — aquesta progressió és consistent amb les 5 zones que marca l'aplicació oficial de FGC per al trajecte complet.</p>
+  <p><b>Zones tarifàries (font oficial):</b> segons el llistat de municipis i sectors tarifaris de l'ATM, Martorell (El Palau, Martorell Central, Martorell Enllaç) i Abrera / Olesa de Montserrat són sector <b>3B</b> → zona 3. Monistrol de Montserrat és sector <b>4Z</b> → zona 4. Castellbell i el Vilar i Sant Vicenç | Castellgalí són sector <b>5E</b> → zona 5. Sant Andreu de la Barca, Pallejà i Sant Vicenç dels Horts tenen sector base 2B, però en ser municipis de l'Àrea Metropolitana de Barcelona (AMB) s'hi aplica la <i>tarifa metropolitana</i>: si el bitllet es compra allà mateix cap a Fira (trajecte 100% dins l'AMB), es factura com a <b>zona 1</b>. Aquesta progressió (1→3→4→5) és consistent amb les 5 zones que marca FGC per al trajecte complet des de Sant Vicenç | Castellgalí.</p>
   <p><b>Estimacions:</b> les distàncies i temps en cotxe des de Castellgalí fins a cada estació són aproximacions basades en la geografia de la vall del Llobregat (corredor C-55/BV-1201/C-15). El cost de depreciació es calcula com <i>valor actual ÷ (vida útil restant en km)</i>, aplicat només al trajecte en cotxe i només si la casella corresponent està marcada.</p>
   <p>Ajusta qualsevol valor de dalt per adaptar el simulador a les teves xifres reals.</p>
 </footer>
@@ -460,14 +460,14 @@
 // (derived from official timetable, direction Barcelona -> Manresa, times reversed)
 const stops = [
   {name:"Sant Vicenç | Castellgalí", trainMin:69, carKm:3,  carMin:5,  zone:5},
-  {name:"Castellbell i el Vilar",     trainMin:64, carKm:6,  carMin:8,  zone:4},
+  {name:"Castellbell i el Vilar",     trainMin:64, carKm:6,  carMin:8,  zone:5},
   {name:"Monistrol de Montserrat",    trainMin:59, carKm:10, carMin:12, zone:4},
   {name:"Montserrat-Aeri",            trainMin:55, carKm:13, carMin:15, zone:4},
   {name:"Olesa de Montserrat",        trainMin:48, carKm:17, carMin:18, zone:3},
   {name:"Abrera",                     trainMin:44, carKm:21, carMin:22, zone:3},
-  {name:"Martorell Enllaç",           trainMin:38, carKm:26, carMin:26, zone:2},
-  {name:"Martorell Central",          trainMin:36, carKm:27, carMin:27, zone:2},
-  {name:"El Palau",                   trainMin:31, carKm:30, carMin:29, zone:2},
+  {name:"Martorell Enllaç",           trainMin:38, carKm:26, carMin:26, zone:3},
+  {name:"Martorell Central",          trainMin:36, carKm:27, carMin:27, zone:3},
+  {name:"El Palau",                   trainMin:31, carKm:30, carMin:29, zone:3},
   {name:"Sant Andreu de la Barca",    trainMin:29, carKm:32, carMin:31, zone:1},
   {name:"Pallejà",                    trainMin:25, carKm:36, carMin:34, zone:1},
   {name:"Quatre Camins",              trainMin:23, carKm:38, carMin:36, zone:1},
