@@ -23,6 +23,7 @@
     --radius:10px;
   }
   *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
   html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;}
   body{padding-bottom:4rem;}
 
@@ -32,11 +33,139 @@
   header.hero{
     background:radial-gradient(ellipse at 20% -10%, #24406b 0%, var(--navy) 55%), var(--navy);
     color:#f4f1e9;
-    padding:3.2rem 0 2.6rem;
+    padding:0 0 2.6rem;
     position:relative;
     overflow:hidden;
     border-bottom:4px solid var(--amber);
   }
+  /* STICKY TOP BAR */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    padding:.85rem 1.5rem;
+    background:rgba(21,34,56,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .topbar-brand{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.95rem;
+    color:#f4f1e9;
+    display:flex; align-items:center; gap:.5rem;
+    white-space:nowrap;
+  }
+  .topbar-brand .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;}
+  .topbar-actions{
+    display:flex; align-items:center; gap:.7rem; flex-wrap:wrap;
+  }
+  .incidents-pill{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    color:#c9d2e2;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.14);
+    padding:.3rem .7rem;
+    border-radius:100px;
+    white-space:nowrap;
+  }
+  .incidents-pill.ok{color:#8fe3bd; background:rgba(47,159,106,0.18); border-color:rgba(47,159,106,0.4);}
+  .incidents-pill.warn{color:#ffd699; background:rgba(232,163,61,0.18); border-color:rgba(232,163,61,0.45);}
+  .incidents-pill.err{color:#ffb3a0; background:rgba(193,85,58,0.18); border-color:rgba(193,85,58,0.45);}
+  .incidents-btn-top{
+    display:inline-flex; align-items:center; gap:.45rem;
+    background:var(--amber);
+    color:#2c2007;
+    border:none;
+    padding:.55rem 1.05rem;
+    border-radius:100px;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:.82rem;
+    cursor:pointer;
+    min-height:38px;
+    white-space:nowrap;
+    transition:filter .15s ease, transform .1s ease;
+  }
+  .incidents-btn-top:hover{filter:brightness(1.08);}
+  .incidents-btn-top:active{transform:scale(0.97);}
+  .incidents-btn-top:disabled{opacity:.7; cursor:default;}
+  .incidents-btn-top .btn-icon{display:inline-block;}
+  .incidents-btn-top.loading .btn-icon{animation:spin 0.9s linear infinite;}
+  @keyframes spin{ to{transform:rotate(360deg);} }
+
+  /* TOP RESULTS PANEL (below sticky bar, visible without scrolling) */
+  .top-results-panel{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .25s ease;
+    background:rgba(10,17,29,0.55);
+    border-bottom:0px solid rgba(255,255,255,0.1);
+  }
+  .top-results-panel.open{
+    max-height:420px;
+    overflow-y:auto;
+    border-bottom-width:1px;
+  }
+  .top-loader{
+    display:flex; align-items:center; gap:.6rem;
+    padding:.9rem 1.5rem;
+    color:#d8dfec;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.82rem;
+  }
+  .spinner{
+    width:16px; height:16px;
+    border-radius:50%;
+    border:2px solid rgba(232,163,61,0.25);
+    border-top-color:var(--amber);
+    animation:spin .7s linear infinite;
+    flex-shrink:0;
+  }
+  .dots span{animation:blink 1.2s infinite; opacity:0;}
+  .dots span:nth-child(1){animation-delay:0s;}
+  .dots span:nth-child(2){animation-delay:.2s;}
+  .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{ 0%,80%,100%{opacity:0;} 40%{opacity:1;} }
+
+  .top-results-body{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1rem;
+    padding:1rem 1.5rem 1.2rem;
+  }
+  .top-results-col-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.82rem;
+    color:#f4f1e9;
+    margin-bottom:.5rem;
+  }
+  .top-results-body .incidents-list{gap:.45rem;}
+  .top-results-body .incidents-ok{
+    background:rgba(47,159,106,0.18); border-color:rgba(47,159,106,0.4); color:#8fe3bd;
+    font-size:.8rem; padding:.5rem .7rem;
+  }
+  .top-results-body .incidents-error{
+    background:rgba(193,85,58,0.18); border-color:rgba(193,85,58,0.4); color:#ffb3a0;
+    font-size:.76rem; padding:.5rem .7rem;
+  }
+  .top-results-body .incidents-error a{color:#ffcfc2;}
+  .top-results-body .incident-item{
+    background:rgba(255,255,255,0.06);
+    border-color:rgba(255,255,255,0.12);
+    border-left-color:var(--amber);
+    color:#e7e9ee;
+  }
+  .top-results-body .incident-item .ik{color:#9fb0c8;}
+  .top-results-body .incident-item .iv{color:#f0f1f4;}
+
   header.hero::after{
     content:"";
     position:absolute; inset:0;
@@ -338,6 +467,72 @@
   }
   footer b{color:var(--ink);}
 
+  /* INCIDENTS SECTION */
+  .incidents-panel{display:flex; flex-direction:column; gap:1rem;}
+  .incidents-btn{
+    align-self:flex-start;
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:.75rem 1.3rem;
+    border-radius:100px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:.88rem;
+    cursor:pointer;
+    min-height:44px;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .incidents-btn:hover{background:var(--navy-2);}
+  .incidents-btn:active{transform:scale(0.98);}
+  .incidents-btn:disabled{opacity:.65; cursor:default;}
+  .incidents-btn .btn-icon{display:inline-block; transition:transform .6s linear;}
+  .incidents-btn.loading .btn-icon{animation:spin 0.9s linear infinite;}
+  @keyframes spin{ to{transform:rotate(360deg);} }
+
+  .incidents-timestamp{font-family:'IBM Plex Mono',monospace; font-size:.74rem; color:var(--muted);}
+
+  .incidents-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.2rem;
+  }
+  .incidents-col-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.92rem;
+    margin-bottom:.6rem;
+  }
+  .incidents-list{display:flex; flex-direction:column; gap:.55rem;}
+  .incidents-placeholder{color:var(--muted); font-size:.85rem; font-style:italic;}
+  .incidents-ok{
+    display:flex; align-items:center; gap:.5rem;
+    color:var(--good); font-weight:600; font-size:.88rem;
+    background:#eef8f3; border:1px solid #cfe9dd; border-radius:8px; padding:.6rem .8rem;
+  }
+  .incidents-error{
+    color:var(--bad); font-size:.82rem; line-height:1.5;
+    background:#fbeeea; border:1px solid #f0d3c8; border-radius:8px; padding:.6rem .8rem;
+  }
+  .incidents-error a{color:var(--bad); font-weight:600;}
+  .incident-item{
+    border:1px solid var(--line);
+    border-left:4px solid var(--amber);
+    border-radius:6px;
+    padding:.6rem .8rem;
+    background:var(--paper);
+    font-size:.8rem;
+    line-height:1.5;
+  }
+  .incident-item .irow{display:flex; gap:.4rem; margin-bottom:.15rem;}
+  .incident-item .ik{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.66rem; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--muted); flex-shrink:0; min-width:6.5em;
+  }
+  .incident-item .iv{color:var(--ink); word-break:break-word;}
+
   @media (max-width:640px){
     .card .metrics{flex-wrap:wrap; gap:1rem;}
     header.hero{padding:2.2rem 0 1.8rem;}
@@ -349,12 +544,48 @@
   @media (max-width:420px){
     .input-grid{grid-template-columns:1fr;}
   }
+  @media (max-width:700px){
+    .incidents-grid{grid-template-columns:1fr;}
+    .topbar{padding:.7rem 1rem; justify-content:center; text-align:center;}
+    .topbar-brand{width:100%; justify-content:center;}
+    .topbar-actions{width:100%; justify-content:center;}
+    .top-results-body{grid-template-columns:1fr; padding:.9rem 1rem 1rem;}
+    .top-results-panel.open{max-height:60vh;}
+  }
 </style>
 </head>
 <body>
 
 <header class="hero">
-  <div class="wrap">
+  <nav class="topbar">
+    <div class="topbar-brand">
+      <span class="dot"></span> Castellgalí → Fira
+    </div>
+    <div class="topbar-actions">
+      <span id="incidentsPill" class="incidents-pill">Incidències sense comprovar</span>
+      <button id="checkIncidentsBtn" class="incidents-btn-top">
+        <span class="btn-icon">⟳</span> Comprova incidències ara
+      </button>
+    </div>
+  </nav>
+
+  <div id="topResultsPanel" class="top-results-panel">
+    <div id="topLoader" class="top-loader" hidden>
+      <span class="spinner" aria-hidden="true"></span>
+      <span class="top-loader-text">Consultant FGC i Trànsit<span class="dots"><span>.</span><span>.</span><span>.</span></span></span>
+    </div>
+    <div id="topResultsBody" class="top-results-body" hidden>
+      <div class="top-results-col">
+        <div class="top-results-col-title">🚆 FGC · R5</div>
+        <div id="topFgcResults" class="incidents-list"></div>
+      </div>
+      <div class="top-results-col">
+        <div class="top-results-col-title">🚗 Trànsit</div>
+        <div id="topTrafficResults" class="incidents-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap" style="padding-top:2.4rem;">
     <div class="eyebrow"><span class="dot"></span> SIMULADOR DE TRAJECTE · EMPRESA A</div>
     <h1>Castellgalí → Fira de Barcelona,<br><span>parada per parada.</span></h1>
     <p class="hero-sub">Combina cotxe fins a qualsevol estació de la línia R5 (FGC) i tren fins a Europa | Fira. Ajusta les teves dades reals de vehicle i tarifa per trobar la combinació més ràpida i la més econòmica.</p>
@@ -443,6 +674,31 @@
         </thead>
         <tbody id="resultsBody"></tbody>
       </table>
+    </div>
+  </section>
+
+  <section id="incidents">
+    <h2>Incidències en viu</h2>
+    <p class="section-desc">Consulta en temps real els avisos oficials d'FGC (línia R5) i les incidències viàries del Servei Català de Trànsit properes a la teva ruta, abans de sortir de casa.</p>
+    <div class="panel incidents-panel">
+      <div id="incidentsTimestamp" class="incidents-timestamp"></div>
+
+      <div class="incidents-grid">
+        <div class="incidents-col">
+          <div class="incidents-col-title">🚆 FGC · línia R5</div>
+          <div id="fgcResults" class="incidents-list">
+            <div class="incidents-placeholder">Prem el botó per consultar avisos actius.</div>
+          </div>
+        </div>
+        <div class="incidents-col">
+          <div class="incidents-col-title">🚗 Trànsit · carreteres de la ruta</div>
+          <div id="trafficResults" class="incidents-list">
+            <div class="incidents-placeholder">Prem el botó per consultar incidències actives.</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="incidents-note">Font: <a href="https://dadesobertes.fgc.cat/explore/dataset/avisos/" target="_blank" rel="noopener">Dades Obertes FGC</a> i <a href="https://www.gencat.cat/transit/opendata/001_RSS.xml" target="_blank" rel="noopener">feed RSS del Servei Català de Trànsit</a>. Són fonts de consulta pública; per <b>comunicar</b> una incidència, truca al <a href="tel:012">012 (Trànsit)</a> o contacta amb <a href="https://www.fgc.cat/atencio-al-client" target="_blank" rel="noopener">Atenció al Client d'FGC</a>.</p>
     </div>
   </section>
 
@@ -577,6 +833,254 @@ document.querySelectorAll('#inputs input').forEach(el => {
   el.addEventListener('change', compute);
 });
 compute();
+
+/* ===== INCIDÈNCIES EN VIU ===== */
+// FGC: Dades Obertes FGC (OpenDataSoft) — dataset "avisos" (avisos de línia)
+const FGC_ENDPOINT = 'https://dadesobertes.fgc.cat/api/explore/v2.1/catalog/datasets/avisos/records?limit=50';
+// Trànsit: feed RSS oficial del Servei Català de Trànsit (dades en viu).
+// El feed no envia capçaleres CORS, així que el consultem a través d'un proxy CORS públic.
+const TRANSIT_SOURCE = 'https://www.gencat.cat/transit/opendata/001_RSS.xml';
+// Comprovat en un navegador real el 22/08/2026: allorigins.win, api.codetabs.com,
+// thingproxy i cors.isomorphic-git.org fallen tots amb "Failed to fetch" (talls actuals
+// dels serveis gratuïts). corsproxy.io ara retorna 403 i exigeix API key fora de
+// localhost, així que mai funcionarà per a una pàgina desplegada — descartat.
+// r.jina.ai (un "reader" de contingut, no un proxy CORS clàssic) sí que respon amb 200,
+// però retorna el feed com a Markdown en lloc de l'XML original — per això té el seu
+// propi parser (parseTransitJinaMarkdown). Es prova primer perquè és l'únic que
+// funciona ara mateix; els altres es deixen com a xarxa de seguretat per si es
+// recuperen més endavant.
+const TRANSIT_PROXIES = [
+  url => 'https://r.jina.ai/' + url,
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+  url => 'https://thingproxy.freeboard.io/fetch/' + url,
+];
+
+// Roads/towns relevant to our route (Castellgalí -> Fira via corredor C-55/Llobregat)
+const ROUTE_KEYWORDS = ['c-55','c-16','c-58','bv-1201','a-2','martorell','abrera','olesa',
+  'monistrol','castellbell','castellgalí','castellgali','sant vicenç de castellet',
+  'sant vicenç dels horts','sant andreu de la barca','pallejà','palleja','cornellà','cornella',
+  'sant boi','hospitalet','fira','manresa','bages','baix llobregat'];
+const FGC_LINE_KEYWORDS = ['r5','r50','llobregat-anoia','manresa'];
+
+// fetch() amb timeout: si un proxy es queda penjat (típic dels proxies CORS gratuïts),
+// no volem que bloquegi la resta de la cadena indefinidament.
+async function fetchWithTimeout(url, ms){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try{
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function fmtTimestamp(){
+  const d = new Date();
+  return d.toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit'}) + ' · ' +
+         d.toLocaleTimeString('ca-ES',{hour:'2-digit',minute:'2-digit'});
+}
+
+function recordMatches(record, keywords){
+  const blob = JSON.stringify(record).toLowerCase();
+  return keywords.some(k => blob.includes(k));
+}
+
+// Parses the SCT RSS/XML feed into an array of {titol, descripcio, data} objects
+function parseTransitRSS(xmlText){
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, 'application/xml');
+  if(xml.querySelector('parsererror')) throw new Error('XML parse error');
+  return Array.from(xml.querySelectorAll('item')).map(item => ({
+    titol: item.querySelector('title')?.textContent?.trim() || '',
+    descripcio: item.querySelector('description')?.textContent?.trim() || '',
+    data: item.querySelector('pubDate')?.textContent?.trim() || '',
+  }));
+}
+
+// r.jina.ai no retorna l'XML original: el "llegeix" i el converteix a Markdown, amb
+// cada item com un bloc "### [títol](enllaç) \n descripció \n [enllaç] \n data".
+// Comprovat en viu el 22/08/2026 — format real observat, no documentació oficial de Jina,
+// així que aquest parser és més fràgil que el de RSS i podria trencar's si Jina el canvia.
+function parseTransitJinaMarkdown(text){
+  const blocks = text.split(/\n###\s+/).slice(1);
+  return blocks.map(block => {
+    const titleMatch = block.match(/^\[([^\]]+)\]/);
+    const titol = titleMatch ? titleMatch[1].trim() : '';
+    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+    let data = '';
+    const descLines = [];
+    for(let i=1; i<lines.length; i++){
+      const l = lines[i];
+      if(/^[A-Z][a-z]{2},\s\d{2}\s[A-Z][a-z]{2}\s\d{4}/.test(l)){ data = l; continue; }
+      if(/^\[https?:\/\//.test(l)) continue; // línia d'enllaç repetit, no és contingut
+      descLines.push(l);
+    }
+    return { titol, descripcio: descLines.join(' '), data };
+  }).filter(it => it.titol);
+}
+
+// Detecta quin format ha tornat el proxy (XML original o Markdown de r.jina.ai) i
+// aplica el parser corresponent.
+function parseTransitResponse(text){
+  const head = text.slice(0, 200);
+  if(head.includes('Markdown Content:') || /^Title:\s/.test(text.trim())){
+    return parseTransitJinaMarkdown(text);
+  }
+  return parseTransitRSS(text);
+}
+
+// Renders a record's fields generically (schema-agnostic: works whatever field names the API returns)
+function renderRecordFields(record){
+  const skip = ['geo_point_2d','geo_shape','recordid','record_timestamp'];
+  const entries = Object.entries(record).filter(([k,v]) =>
+    v !== null && v !== '' && !skip.includes(k) && typeof v !== 'object'
+  ).slice(0, 6);
+  if(entries.length === 0) return '<div class="iv">' + JSON.stringify(record).slice(0,180) + '…</div>';
+  return entries.map(([k,v]) => `
+    <div class="irow"><span class="ik">${k.replace(/_/g,' ')}</span><span class="iv">${String(v)}</span></div>
+  `).join('');
+}
+
+function renderList(container, records, emptyLabel){
+  if(records.length === 0){
+    container.innerHTML = `<div class="incidents-ok">✓ ${emptyLabel}</div>`;
+    return;
+  }
+  container.innerHTML = records.map(r => `<div class="incident-item">${renderRecordFields(r)}</div>`).join('');
+}
+
+function renderError(container, sourceLabel, sourceUrl){
+  container.innerHTML = `<div class="incidents-error">
+    No s'ha pogut consultar ${sourceLabel} ara mateix (pot ser un tall temporal de l'API o de connexió).
+    Consulta-ho directament: <a href="${sourceUrl}" target="_blank" rel="noopener">obrir font oficial ↗</a>
+  </div>`;
+}
+
+// Renders the same record list into one or more containers
+function renderListMulti(containers, records, emptyLabel){
+  const html = records.length === 0
+    ? `<div class="incidents-ok">✓ ${emptyLabel}</div>`
+    : records.map(r => `<div class="incident-item">${renderRecordFields(r)}</div>`).join('');
+  containers.forEach(c => { if(c) c.innerHTML = html; });
+}
+
+function renderErrorMulti(containers, sourceLabel, sourceUrl){
+  const html = `<div class="incidents-error">
+    No s'ha pogut consultar ${sourceLabel} ara mateix (pot ser un tall temporal de l'API o de connexió).
+    Consulta-ho directament: <a href="${sourceUrl}" target="_blank" rel="noopener">obrir font oficial ↗</a>
+  </div>`;
+  containers.forEach(c => { if(c) c.innerHTML = html; });
+}
+
+async function checkIncidents(){
+  const btn = document.getElementById('checkIncidentsBtn');
+  const fgcBox = document.getElementById('fgcResults');
+  const trafficBox = document.getElementById('trafficResults');
+  const topFgcBox = document.getElementById('topFgcResults');
+  const topTrafficBox = document.getElementById('topTrafficResults');
+  const stamp = document.getElementById('incidentsTimestamp');
+  const pill = document.getElementById('incidentsPill');
+  const panel = document.getElementById('topResultsPanel');
+  const loader = document.getElementById('topLoader');
+  const body = document.getElementById('topResultsBody');
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  pill.className = 'incidents-pill';
+  pill.textContent = 'Comprovant…';
+
+  panel.classList.add('open');
+  loader.hidden = false;
+  body.hidden = true;
+
+  const placeholderHtml = '<div class="incidents-placeholder">Consultant…</div>';
+  [fgcBox, trafficBox, topFgcBox, topTrafficBox].forEach(c => c.innerHTML = placeholderHtml);
+
+  let fgcCount = 0, trafficCount = 0, hadError = false;
+
+  // FGC
+  try{
+    const res = await fetch(FGC_ENDPOINT);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const all = data.results || [];
+    const relevant = all.filter(r => recordMatches(r, FGC_LINE_KEYWORDS));
+    fgcCount = relevant.length;
+    renderListMulti([fgcBox, topFgcBox], relevant, 'Sense avisos actius a la línia R5');
+  }catch(err){
+    hadError = true;
+    renderErrorMulti([fgcBox, topFgcBox], "l'API d'FGC", 'https://dadesobertes.fgc.cat/explore/dataset/avisos/');
+  }
+
+  // Trànsit
+  try{
+    let xmlText = null;
+    let lastErr = null;
+
+    // Intent 1: connexió directa (només funcionarà si gencat.cat arriba a enviar
+    // capçaleres CORS; avui dia no ho fa, però l'intent és barat i inofensiu).
+    try{
+      const res = await fetchWithTimeout(TRANSIT_SOURCE, 6000);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if(!text.includes('<item') && !text.includes('<rss')) throw new Error('resposta no és RSS vàlid');
+      xmlText = text;
+    }catch(directErr){
+      lastErr = directErr;
+    }
+
+    // Intent 2: cadena de proxies CORS públics, un darrere l'altre. Els proxies
+    // gratuïts pateixen talls sovint, així que si un falla o triga massa (timeout),
+    // es prova el següent en lloc de rendir-se immediatament.
+    if(xmlText === null){
+      for(const buildProxyUrl of TRANSIT_PROXIES){
+        try{
+          const res = await fetchWithTimeout(buildProxyUrl(TRANSIT_SOURCE), 8000);
+          if(!res.ok) throw new Error('HTTP ' + res.status);
+          const text = await res.text();
+          const looksValid = text.includes('<item') || text.includes('<rss')
+            || text.includes('Markdown Content:') || /^Title:\s/.test(text.trim());
+          if(!looksValid) throw new Error('resposta no reconeguda (ni RSS ni Markdown de Jina)');
+          xmlText = text;
+          break;
+        }catch(proxyErr){
+          lastErr = proxyErr;
+        }
+      }
+    }
+
+    if(xmlText === null) throw lastErr || new Error('Tots els proxies han fallat');
+
+    const items = parseTransitResponse(xmlText);
+    const relevant = items.filter(r => recordMatches(r, ROUTE_KEYWORDS));
+    trafficCount = relevant.length;
+    renderListMulti([trafficBox, topTrafficBox], relevant, 'Sense incidències a les carreteres de la ruta');
+  }catch(err){
+    hadError = true;
+    renderErrorMulti([trafficBox, topTrafficBox], "el feed de Trànsit", 'https://cit.transit.gencat.cat/cit/AppJava/views/incidents.xhtml');
+  }
+
+  stamp.textContent = 'Última comprovació: ' + fmtTimestamp();
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  loader.hidden = true;
+  body.hidden = false;
+
+  const total = fgcCount + trafficCount;
+  if(hadError && total === 0){
+    pill.textContent = '⚠ Error en consultar alguna font';
+    pill.classList.add('err');
+  } else if(total === 0){
+    pill.textContent = '✓ Sense incidències actives';
+    pill.classList.add('ok');
+  } else {
+    pill.textContent = `⚠ ${total} avís${total>1?'os':''} actiu${total>1?'s':''}`;
+    pill.classList.add('warn');
+  }
+}
+
+document.getElementById('checkIncidentsBtn').addEventListener('click', checkIncidents);
 </script>
 
 </body>
