@@ -612,6 +612,15 @@
     display:block;
     background:var(--paper-2);
   }
+  .map-live-status{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.82rem;
+    padding:.6rem .9rem;
+    border-radius:8px;
+    margin-bottom:1rem;
+  }
+  .map-live-status.live{background:#eef8f3; color:var(--good); border:1px solid #cfe9dd;}
+  .map-live-status.error{background:#fbeeea; color:var(--bad); border:1px solid #f0d3c8;}
   .map-open-live{
     position:absolute; bottom:.7rem; right:.7rem; z-index:2;
     background:var(--amber); color:#2c2007;
@@ -621,8 +630,10 @@
     text-decoration:none;
     box-shadow:0 3px 10px rgba(0,0,0,.25);
   }
+  #passTimesTable td.maps-cell{white-space:normal !important;}
   #passTimesTable td.maps-cell a{
     color:var(--rail); font-weight:600; text-decoration:none; font-size:.78rem;
+    white-space:nowrap;
   }
   #passTimesTable td.maps-cell a:hover{text-decoration:underline;}
   #passTimesTable tr.recommended td{background:#fdf6ea;}
@@ -797,9 +808,11 @@
       <div id="mapOutput" class="map-output" hidden>
         <div class="map-embed-wrap">
           <div id="mapRecommendedLabel" class="map-recommended-label"></div>
-          <iframe id="mapEmbed" class="map-embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <div id="mapEmbedLive" class="map-embed" hidden></div>
+          <iframe id="mapEmbedFallback" class="map-embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           <a id="mapOpenLive" class="map-open-live" href="#" target="_blank" rel="noopener">Obrir a Google Maps amb trànsit en viu ↗</a>
         </div>
+        <div id="mapLiveStatus" class="map-live-status" hidden></div>
 
         <div class="table-scroll">
           <table class="results" id="passTimesTable">
@@ -808,14 +821,14 @@
                 <th>Estació</th>
                 <th>Sortida de casa</th>
                 <th>Arribada a l'estació</th>
-                <th>Arribada a Fira</th>
+                <th>Arribada a KPMG</th>
                 <th>Google Maps</th>
               </tr>
             </thead>
             <tbody id="passTimesBody"></tbody>
           </table>
         </div>
-        <p class="incidents-note">El mapa incrustat i les hores de pas es calculen amb les nostres pròpies estimacions (no amb dades de trànsit de Google). El botó "Obrir a Google Maps" sí que mostra el trànsit real en aquest moment — un cop allà, pots ajustar manualment l'hora de sortida des de la pròpia app de Maps per veure la seva previsió per a aquella hora.</p>
+        <p class="incidents-note">Destinació final: <b>KPMG, Torre Realia BCN (Plaça d'Europa 41-43)</b>. Google Maps no permet combinar cotxe+tren en un sol enllaç, així que cada tram s'obre per separat i amb el mode correcte: <b>🚗 Cotxe</b> (Castellgalí → estació), <b>🚆 Tren</b> (estació → Europa | Fira, calculat per Google amb dades reals de transport públic), i <b>🚶 A peu</b> (Europa | Fira → oficina, uns 4 minuts). El mapa incrustat i les hores de pas de la taula són estimacions pròpies; els tres botons de Maps mostren el trànsit i els horaris reals del moment — un cop allà, pots ajustar manualment l'hora de sortida per veure-hi la previsió.</p>
       </div>
     </div>
   </section>
@@ -854,8 +867,15 @@ const stops = [
   {name:"L'Hospitalet Av. Carrilet",  trainMin:6,  carKm:54, carMin:50, zone:1, mapsQuery:"Estació FGC L'Hospitalet Avinguda Carrilet"},
   {name:"Sant Josep",                 trainMin:4,  carKm:55, carMin:51, zone:1, mapsQuery:"Estació FGC Sant Josep, L'Hospitalet de Llobregat"},
   {name:"Gornal",                     trainMin:2,  carKm:57, carMin:52, zone:1, mapsQuery:"Estació FGC Gornal, L'Hospitalet de Llobregat"},
-  {name:"Europa | Fira (tot cotxe)",  trainMin:0,  carKm:58, carMin:53, zone:0, mapsQuery:"Fira de Barcelona Gran Via, L'Hospitalet de Llobregat"},
+  {name:"Europa | Fira (tot cotxe)",  trainMin:0,  carKm:58, carMin:53, zone:0, mapsQuery:"Torre Realia BCN, Plaça d'Europa 41-43, L'Hospitalet de Llobregat"},
 ];
+// Últim tram a peu: de l'estació Europa | Fira a les oficines de KPMG (Torre Realia BCN, Plaça d'Europa)
+const WALK_MIN = 4;
+const OFFICE_QUERY = "Torre Realia BCN, Plaça d'Europa 41-43, L'Hospitalet de Llobregat";
+const OFFICE_WALK_URL = 'https://www.google.com/maps/dir/?api=1'
+  + '&origin=' + encodeURIComponent('Europa | Fira, L\'Hospitalet de Llobregat')
+  + '&destination=' + encodeURIComponent(OFFICE_QUERY)
+  + '&travelmode=walking';
 
 function fmtMin(m){
   if(m < 60) return m + " min";
@@ -881,7 +901,7 @@ function compute(){
   const carCostPerKm = depPerKm + fuelPerKm;
 
   const rows = stops.map(s => {
-    const totalTimeOneWay = s.carMin + (s.trainMin>0 ? transferMin + s.trainMin : 0);
+    const totalTimeOneWay = s.carMin + (s.trainMin>0 ? transferMin + s.trainMin + WALK_MIN : 0);
     const carCostRT = s.carKm * 2 * carCostPerKm;
     const trainCostRT = s.zone>0 ? (s.zone * zonePrice) * 2 : 0;
     const parkingCost = s.zone>0 ? parking : 0;
@@ -1210,12 +1230,20 @@ document.getElementById('checkIncidentsBtn').addEventListener('click', checkInci
 
 /* ===== MAPA AMB HORES DE PAS (Google Maps) ===== */
 const ORIGIN_QUERY = "Castellgalí, Barcelona";
+const EUROPA_FIRA_QUERY = "Europa | Fira, L'Hospitalet de Llobregat";
 
-function googleMapsDirUrl(destinationQuery){
+function googleMapsDirUrl(destinationQuery, originQuery, travelmode){
   return 'https://www.google.com/maps/dir/?api=1'
-    + '&origin=' + encodeURIComponent(ORIGIN_QUERY)
+    + '&origin=' + encodeURIComponent(originQuery || ORIGIN_QUERY)
     + '&destination=' + encodeURIComponent(destinationQuery)
-    + '&travelmode=driving';
+    + '&travelmode=' + (travelmode || 'driving');
+}
+// Tram en tren: Google Maps calcula l'itinerari real per transport públic (FGC/metro)
+// entre l'estació d'origen i Europa | Fira. api=1 només admet UN mode per enllaç, per
+// això el trajecte complet cotxe+tren+a peu es reparteix en 3 enllaços independents
+// en lloc d'intentar forçar-ho tot en un de sol (Maps no admet mode mixt en un mateix enllaç).
+function googleMapsTransitUrl(originQuery, destinationQuery){
+  return googleMapsDirUrl(destinationQuery, originQuery, 'transit');
 }
 // Legacy no-API-key embeddable directions iframe
 function googleMapsEmbedUrl(destinationQuery){
@@ -1250,7 +1278,7 @@ function pickRecommendedStopName(){
   const carCostPerKm = (includeDep ? carValue/remainingLife : 0) + (consumption/100)*fuelPrice;
 
   const rows = stops.map(s => {
-    const totalTimeOneWay = s.carMin + (s.trainMin>0 ? transferMin + s.trainMin : 0);
+    const totalTimeOneWay = s.carMin + (s.trainMin>0 ? transferMin + s.trainMin + WALK_MIN : 0);
     const totalCostDay = s.carKm*2*carCostPerKm + (s.zone>0 ? (s.zone*zonePrice)*2 : 0) + (s.zone>0?parking:0);
     return {...s, totalTimeOneWay, totalCostDay};
   });
@@ -1272,29 +1300,140 @@ function generatePassTimesMap(){
   const body = document.getElementById('passTimesBody');
   body.innerHTML = stops.map(s => {
     const arrivalStation = addMinutes(departure, s.carMin);
-    const arrivalFira = s.trainMin>0
-      ? addMinutes(departure, s.carMin + transferMin + s.trainMin)
+    const arrivalOffice = s.trainMin>0
+      ? addMinutes(departure, s.carMin + transferMin + s.trainMin + WALK_MIN)
       : arrivalStation;
+    const mapsLinks = s.trainMin>0
+      ? `<a href="${googleMapsDirUrl(s.mapsQuery)}" target="_blank" rel="noopener">🚗 Cotxe</a> · `
+        + `<a href="${googleMapsTransitUrl(s.mapsQuery, EUROPA_FIRA_QUERY)}" target="_blank" rel="noopener">🚆 Tren</a> · `
+        + `<a href="${OFFICE_WALK_URL}" target="_blank" rel="noopener">🚶 A peu</a>`
+      : `<a href="${googleMapsDirUrl(s.mapsQuery)}" target="_blank" rel="noopener">🚗 Obrir ↗</a>`;
     const isRec = s.name === recommendedName;
     return `<tr class="${isRec?'recommended':''}">
       <td class="name">${s.name}${isRec?' <span class="sub">★ recomanada</span>':''}</td>
       <td class="num-cell" data-label="Sortida de casa">${departure}</td>
       <td class="num-cell" data-label="Arribada a l'estació">${arrivalStation}</td>
-      <td class="num-cell" data-label="Arribada a Fira">${arrivalFira}</td>
-      <td class="maps-cell" data-label="Google Maps"><a href="${googleMapsDirUrl(s.mapsQuery)}" target="_blank" rel="noopener">Obrir ↗</a></td>
+      <td class="num-cell" data-label="Arribada a KPMG">${arrivalOffice}</td>
+      <td class="maps-cell" data-label="Google Maps">${mapsLinks}</td>
     </tr>`;
   }).join('');
 
   const recStop = stops.find(s => s.name === recommendedName);
   document.getElementById('mapRecommendedLabel').textContent = '★ ' + recStop.name;
-  document.getElementById('mapEmbed').src = googleMapsEmbedUrl(recStop.mapsQuery);
+  document.getElementById('mapEmbedFallback').src = googleMapsEmbedUrl(recStop.mapsQuery);
   document.getElementById('mapOpenLive').href = googleMapsDirUrl(recStop.mapsQuery);
 
   document.getElementById('mapOutput').hidden = false;
   document.getElementById('mapSection').scrollIntoView({behavior:'smooth', block:'start'});
+
+  renderLiveGoogleMap(recStop);
 }
 
 document.getElementById('generateMapBtnTop').addEventListener('click', generatePassTimesMap);
+
+/* ===== MAPA REAL AMB TRÀNSIT EN VIU (Maps JavaScript API) ===== */
+// Clau restringida a Maps JavaScript API + Directions API. Si no carrega (clau
+// invàlida, facturació no activada, quota exhaurida...), es manté automàticament
+// el mapa estàtic sense clau (mapEmbedFallback) com a xarxa de seguretat.
+const GOOGLE_MAPS_API_KEY = 'AIzaSyBe4EocVMDDHuzhd_YppFABqqDFkRA2_a4';
+let _googleMapsLoadPromise = null;
+let _gmap = null, _gmapRenderer = null;
+
+function loadGoogleMapsScript(){
+  if(_googleMapsLoadPromise) return _googleMapsLoadPromise;
+  _googleMapsLoadPromise = new Promise((resolve, reject) => {
+    if(window.google && window.google.maps){ resolve(window.google.maps); return; }
+    const script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=' + GOOGLE_MAPS_API_KEY;
+    script.async = true;
+    script.onload = () => {
+      if(window.google && window.google.maps) resolve(window.google.maps);
+      else reject(new Error('Google Maps no s\'ha inicialitzat correctament'));
+    };
+    script.onerror = () => reject(new Error('No s\'ha pogut carregar el script de Google Maps (clau invàlida o facturació no activada)'));
+    document.head.appendChild(script);
+  });
+  return _googleMapsLoadPromise;
+}
+
+// Timeout genèric: si una promesa no es resol en `ms`, la rebutgem nosaltres
+// mateixos perquè la UI mai es quedi penjada esperant indefinidament.
+function withTimeout(promise, ms, timeoutMsg){
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(timeoutMsg || 'Temps d\'espera exhaurit')), ms)),
+  ]);
+}
+
+// Petició de ruta amb l'API clàssica de callback (més compatible que route()
+// basat en Promise, que en algunes versions del loader no arriba a resoldre's).
+function requestDirections(directionsService, request){
+  return new Promise((resolve, reject) => {
+    directionsService.route(request, (result, status) => {
+      if(status === 'OK' && result) resolve(result);
+      else reject(new Error('Directions API status: ' + status));
+    });
+  });
+}
+
+async function renderLiveGoogleMap(recStop){
+  const statusBox = document.getElementById('mapLiveStatus');
+  const liveDiv = document.getElementById('mapEmbedLive');
+  const fallbackIframe = document.getElementById('mapEmbedFallback');
+
+  statusBox.hidden = false;
+  statusBox.className = 'map-live-status';
+  statusBox.textContent = 'Carregant trànsit en viu de Google Maps…';
+
+  try{
+    const maps = await withTimeout(
+      loadGoogleMapsScript(), 10000,
+      'El script de Google Maps no ha respost en 10 segons'
+    );
+
+    if(!_gmap){
+      _gmap = new maps.Map(liveDiv, {
+        zoom: 10,
+        center: { lat: 41.55, lng: 1.95 }, // punt mitjà aproximat Castellgalí–Fira
+        mapTypeControl: false,
+        streetViewControl: false,
+      });
+      _gmapRenderer = new maps.DirectionsRenderer({ map: _gmap, suppressMarkers: false });
+      new maps.TrafficLayer().setMap(_gmap);
+    }
+
+    const directionsService = new maps.DirectionsService();
+    const result = await withTimeout(
+      requestDirections(directionsService, {
+        origin: ORIGIN_QUERY,
+        destination: recStop.mapsQuery,
+        travelMode: maps.TravelMode.DRIVING,
+        drivingOptions: { departureTime: new Date(), trafficModel: 'bestguess' },
+      }),
+      10000,
+      'La petició de ruta a Directions API no ha respost en 10 segons'
+    );
+    _gmapRenderer.setDirections(result);
+
+    const leg = result.routes[0].legs[0];
+    const liveMin = Math.round((leg.duration_in_traffic ? leg.duration_in_traffic.value : leg.duration.value) / 60);
+    const diff = liveMin - recStop.carMin;
+    const diffText = diff === 0 ? 'igual que la nostra estimació'
+      : diff > 0 ? `${diff} min més que la nostra estimació (${recStop.carMin} min)`
+      : `${Math.abs(diff)} min menys que la nostra estimació (${recStop.carMin} min)`;
+
+    statusBox.className = 'map-live-status live';
+    statusBox.innerHTML = `🟢 Google Maps ara mateix: <b>${liveMin} min</b> en cotxe amb trànsit en viu (${leg.distance.text}) — ${diffText}.`;
+
+    liveDiv.hidden = false;
+    fallbackIframe.hidden = true;
+  }catch(err){
+    statusBox.className = 'map-live-status error';
+    statusBox.textContent = '⚠ No s\'ha pogut carregar el mapa en viu (' + err.message + '). Es mostra el mapa estàtic de referència.';
+    liveDiv.hidden = true;
+    fallbackIframe.hidden = false;
+  }
+}
 </script>
 
 </body>
