@@ -100,6 +100,31 @@
   .incidents-btn-top.loading .btn-icon{animation:spin 0.9s linear infinite;}
   @keyframes spin{ to{transform:rotate(360deg);} }
 
+  .topbar-sep{
+    width:1px; height:22px;
+    background:rgba(255,255,255,0.18);
+    display:inline-block;
+  }
+  .topbar-time-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    color:#c9d2e2;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .topbar-time-input{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    padding:.4rem .5rem;
+    min-height:38px;
+    border:1.5px solid rgba(255,255,255,0.18);
+    border-radius:6px;
+    background:rgba(255,255,255,0.08);
+    color:#f4f1e9;
+    color-scheme:dark;
+  }
+  .topbar-time-input:disabled{opacity:.45;}
+
   /* TOP RESULTS PANEL (below sticky bar, visible without scrolling) */
   .top-results-panel{
     max-height:0;
@@ -549,8 +574,61 @@
     .topbar{padding:.7rem 1rem; justify-content:center; text-align:center;}
     .topbar-brand{width:100%; justify-content:center;}
     .topbar-actions{width:100%; justify-content:center;}
+    .topbar-sep{display:none;}
     .top-results-body{grid-template-columns:1fr; padding:.9rem 1rem 1rem;}
     .top-results-panel.open{max-height:60vh;}
+  }
+
+  /* MAP SECTION */
+  .map-gate-note{
+    color:var(--muted);
+    font-size:.86rem;
+    background:var(--paper-2);
+    border:1px dashed var(--line);
+    border-radius:8px;
+    padding:.8rem 1rem;
+  }
+  .map-output{margin-top:1.4rem;}
+  .map-embed-wrap{
+    position:relative;
+    margin-bottom:1.2rem;
+    border-radius:var(--radius);
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .map-recommended-label{
+    position:absolute; top:.7rem; left:.7rem; z-index:2;
+    background:var(--navy); color:#fff;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    padding:.35rem .7rem;
+    border-radius:100px;
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+  }
+  .map-embed{
+    width:100%;
+    height:340px;
+    border:0;
+    display:block;
+    background:var(--paper-2);
+  }
+  .map-open-live{
+    position:absolute; bottom:.7rem; right:.7rem; z-index:2;
+    background:var(--amber); color:#2c2007;
+    font-family:'Inter',sans-serif; font-weight:700; font-size:.78rem;
+    padding:.5rem .9rem;
+    border-radius:100px;
+    text-decoration:none;
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+  }
+  #passTimesTable td.maps-cell a{
+    color:var(--rail); font-weight:600; text-decoration:none; font-size:.78rem;
+  }
+  #passTimesTable td.maps-cell a:hover{text-decoration:underline;}
+  #passTimesTable tr.recommended td{background:#fdf6ea;}
+
+  @media (max-width:640px){
+    .map-embed{height:260px;}
   }
 </style>
 </head>
@@ -565,6 +643,12 @@
       <span id="incidentsPill" class="incidents-pill">Incidències sense comprovar</span>
       <button id="checkIncidentsBtn" class="incidents-btn-top">
         <span class="btn-icon">⟳</span> Comprova incidències ara
+      </button>
+      <span class="topbar-sep"></span>
+      <label for="departureTimeTop" class="topbar-time-label">Sortida</label>
+      <input type="time" id="departureTimeTop" class="topbar-time-input" value="07:00" disabled>
+      <button id="generateMapBtnTop" class="incidents-btn-top map-generate-btn" disabled title="Comprova primer les incidències">
+        <span class="btn-icon">🗺️</span> Genera mapa
       </button>
     </div>
   </nav>
@@ -702,6 +786,40 @@
     </div>
   </section>
 
+  <section id="mapSection">
+    <h2>Mapa amb hores de pas</h2>
+    <p class="section-desc">Utilitza el generador de la barra superior (hora de sortida + "Genera mapa") per calcular les hores de pas a cada estació i obrir la ruta a Google Maps. Els resultats apareixeran aquí.</p>
+    <div class="panel">
+      <div id="mapGateNote" class="map-gate-note">
+        ⚠ Comprova primer les incidències i indica la hora de sortida a la barra superior per generar el mapa.
+      </div>
+
+      <div id="mapOutput" class="map-output" hidden>
+        <div class="map-embed-wrap">
+          <div id="mapRecommendedLabel" class="map-recommended-label"></div>
+          <iframe id="mapEmbed" class="map-embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <a id="mapOpenLive" class="map-open-live" href="#" target="_blank" rel="noopener">Obrir a Google Maps amb trànsit en viu ↗</a>
+        </div>
+
+        <div class="table-scroll">
+          <table class="results" id="passTimesTable">
+            <thead>
+              <tr>
+                <th>Estació</th>
+                <th>Sortida de casa</th>
+                <th>Arribada a l'estació</th>
+                <th>Arribada a Fira</th>
+                <th>Google Maps</th>
+              </tr>
+            </thead>
+            <tbody id="passTimesBody"></tbody>
+          </table>
+        </div>
+        <p class="incidents-note">El mapa incrustat i les hores de pas es calculen amb les nostres pròpies estimacions (no amb dades de trànsit de Google). El botó "Obrir a Google Maps" sí que mostra el trànsit real en aquest moment — un cop allà, pots ajustar manualment l'hora de sortida des de la pròpia app de Maps per veure la seva previsió per a aquella hora.</p>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <footer>
@@ -715,28 +833,28 @@
 // Real FGC R5 schedule data: minutes remaining on train from each stop to Europa|Fira
 // (derived from official timetable, direction Barcelona -> Manresa, times reversed)
 const stops = [
-  {name:"Sant Vicenç | Castellgalí", trainMin:69, carKm:3,  carMin:5,  zone:5},
-  {name:"Castellbell i el Vilar",     trainMin:64, carKm:6,  carMin:8,  zone:5},
-  {name:"Monistrol de Montserrat",    trainMin:59, carKm:10, carMin:12, zone:4},
-  {name:"Montserrat-Aeri",            trainMin:55, carKm:13, carMin:15, zone:4},
-  {name:"Olesa de Montserrat",        trainMin:48, carKm:17, carMin:18, zone:3},
-  {name:"Abrera",                     trainMin:44, carKm:21, carMin:22, zone:3},
-  {name:"Martorell Enllaç",           trainMin:38, carKm:26, carMin:26, zone:3},
-  {name:"Martorell Central",          trainMin:36, carKm:27, carMin:27, zone:3},
-  {name:"El Palau",                   trainMin:31, carKm:30, carMin:29, zone:3},
-  {name:"Sant Andreu de la Barca",    trainMin:29, carKm:32, carMin:31, zone:1},
-  {name:"Pallejà",                    trainMin:25, carKm:36, carMin:34, zone:1},
-  {name:"Quatre Camins",              trainMin:23, carKm:38, carMin:36, zone:1},
-  {name:"Can Ros",                    trainMin:22, carKm:39, carMin:37, zone:1},
-  {name:"Sant Vicenç dels Horts",     trainMin:20, carKm:41, carMin:39, zone:1},
-  {name:"Molí Nou | Ciutat Coop.",    trainMin:15, carKm:45, carMin:42, zone:1},
-  {name:"Sant Boi",                   trainMin:13, carKm:47, carMin:44, zone:1},
-  {name:"Cornellà Riera",             trainMin:10, carKm:50, carMin:47, zone:1},
-  {name:"Almeda",                     trainMin:8,  carKm:52, carMin:49, zone:1},
-  {name:"L'Hospitalet Av. Carrilet",  trainMin:6,  carKm:54, carMin:50, zone:1},
-  {name:"Sant Josep",                 trainMin:4,  carKm:55, carMin:51, zone:1},
-  {name:"Gornal",                     trainMin:2,  carKm:57, carMin:52, zone:1},
-  {name:"Europa | Fira (tot cotxe)",  trainMin:0,  carKm:58, carMin:53, zone:0},
+  {name:"Sant Vicenç | Castellgalí", trainMin:69, carKm:3,  carMin:5,  zone:5, mapsQuery:"Estació FGC Sant Vicenç de Castellet - Castellgalí"},
+  {name:"Castellbell i el Vilar",     trainMin:64, carKm:6,  carMin:8,  zone:5, mapsQuery:"Estació FGC Castellbell i el Vilar"},
+  {name:"Monistrol de Montserrat",    trainMin:59, carKm:10, carMin:12, zone:4, mapsQuery:"Estació FGC Monistrol de Montserrat"},
+  {name:"Montserrat-Aeri",            trainMin:55, carKm:13, carMin:15, zone:4, mapsQuery:"Estació FGC Montserrat Aeri"},
+  {name:"Olesa de Montserrat",        trainMin:48, carKm:17, carMin:18, zone:3, mapsQuery:"Estació FGC Olesa de Montserrat"},
+  {name:"Abrera",                     trainMin:44, carKm:21, carMin:22, zone:3, mapsQuery:"Estació FGC Abrera"},
+  {name:"Martorell Enllaç",           trainMin:38, carKm:26, carMin:26, zone:3, mapsQuery:"Estació FGC Martorell Enllaç"},
+  {name:"Martorell Central",          trainMin:36, carKm:27, carMin:27, zone:3, mapsQuery:"Estació FGC Martorell Central"},
+  {name:"El Palau",                   trainMin:31, carKm:30, carMin:29, zone:3, mapsQuery:"Estació FGC El Palau, Martorell"},
+  {name:"Sant Andreu de la Barca",    trainMin:29, carKm:32, carMin:31, zone:1, mapsQuery:"Estació FGC Sant Andreu de la Barca"},
+  {name:"Pallejà",                    trainMin:25, carKm:36, carMin:34, zone:1, mapsQuery:"Estació FGC Pallejà"},
+  {name:"Quatre Camins",              trainMin:23, carKm:38, carMin:36, zone:1, mapsQuery:"Estació FGC Quatre Camins, Pallejà"},
+  {name:"Can Ros",                    trainMin:22, carKm:39, carMin:37, zone:1, mapsQuery:"Estació FGC Can Ros, Sant Vicenç dels Horts"},
+  {name:"Sant Vicenç dels Horts",     trainMin:20, carKm:41, carMin:39, zone:1, mapsQuery:"Estació FGC Sant Vicenç dels Horts"},
+  {name:"Molí Nou | Ciutat Coop.",    trainMin:15, carKm:45, carMin:42, zone:1, mapsQuery:"Estació FGC Molí Nou - Ciutat Cooperativa, Sant Boi"},
+  {name:"Sant Boi",                   trainMin:13, carKm:47, carMin:44, zone:1, mapsQuery:"Estació FGC Sant Boi de Llobregat"},
+  {name:"Cornellà Riera",             trainMin:10, carKm:50, carMin:47, zone:1, mapsQuery:"Estació FGC Cornellà Riera"},
+  {name:"Almeda",                     trainMin:8,  carKm:52, carMin:49, zone:1, mapsQuery:"Estació FGC Almeda, Cornellà de Llobregat"},
+  {name:"L'Hospitalet Av. Carrilet",  trainMin:6,  carKm:54, carMin:50, zone:1, mapsQuery:"Estació FGC L'Hospitalet Avinguda Carrilet"},
+  {name:"Sant Josep",                 trainMin:4,  carKm:55, carMin:51, zone:1, mapsQuery:"Estació FGC Sant Josep, L'Hospitalet de Llobregat"},
+  {name:"Gornal",                     trainMin:2,  carKm:57, carMin:52, zone:1, mapsQuery:"Estació FGC Gornal, L'Hospitalet de Llobregat"},
+  {name:"Europa | Fira (tot cotxe)",  trainMin:0,  carKm:58, carMin:53, zone:0, mapsQuery:"Fira de Barcelona Gran Via, L'Hospitalet de Llobregat"},
 ];
 
 function fmtMin(m){
@@ -1078,9 +1196,105 @@ async function checkIncidents(){
     pill.textContent = `⚠ ${total} avís${total>1?'os':''} actiu${total>1?'s':''}`;
     pill.classList.add('warn');
   }
+
+  // Unlock the "generate map" controls now that the incidents check has finished
+  const gateNote = document.getElementById('mapGateNote');
+  const topDeparture = document.getElementById('departureTimeTop');
+  const topGenerateBtn = document.getElementById('generateMapBtnTop');
+  if(gateNote) gateNote.hidden = true;
+  if(topDeparture){ topDeparture.disabled = false; }
+  if(topGenerateBtn){ topGenerateBtn.disabled = false; topGenerateBtn.title = ''; }
 }
 
 document.getElementById('checkIncidentsBtn').addEventListener('click', checkIncidents);
+
+/* ===== MAPA AMB HORES DE PAS (Google Maps) ===== */
+const ORIGIN_QUERY = "Castellgalí, Barcelona";
+
+function googleMapsDirUrl(destinationQuery){
+  return 'https://www.google.com/maps/dir/?api=1'
+    + '&origin=' + encodeURIComponent(ORIGIN_QUERY)
+    + '&destination=' + encodeURIComponent(destinationQuery)
+    + '&travelmode=driving';
+}
+// Legacy no-API-key embeddable directions iframe
+function googleMapsEmbedUrl(destinationQuery){
+  return 'https://maps.google.com/maps'
+    + '?saddr=' + encodeURIComponent(ORIGIN_QUERY)
+    + '&daddr=' + encodeURIComponent(destinationQuery)
+    + '&output=embed';
+}
+
+function addMinutes(hhmm, minsToAdd){
+  const [h,m] = hhmm.split(':').map(Number);
+  const total = h*60 + m + Math.round(minsToAdd);
+  const dayMin = ((total % 1440) + 1440) % 1440;
+  const hh = Math.floor(dayMin/60).toString().padStart(2,'0');
+  const mm = (dayMin%60).toString().padStart(2,'0');
+  const overflow = total >= 1440 ? ' (+1d)' : (total < 0 ? ' (-1d)' : '');
+  return hh + ':' + mm + overflow;
+}
+
+function pickRecommendedStopName(){
+  // Reuses the same "balanced" logic as compute(), based on current input values
+  const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
+  const zonePrice = parseFloat(document.getElementById('zonePrice').value) || 0;
+  const fuelPrice = parseFloat(document.getElementById('fuelPrice').value) || 0;
+  const consumption = parseFloat(document.getElementById('consumption').value) || 0;
+  const carValue = parseFloat(document.getElementById('carValue').value) || 0;
+  const carKmNow = parseFloat(document.getElementById('carKm').value) || 0;
+  const lifeKm = parseFloat(document.getElementById('lifeKm').value) || 1;
+  const includeDep = document.getElementById('includeDep').checked;
+  const parking = parseFloat(document.getElementById('parking').value) || 0;
+  const remainingLife = Math.max(lifeKm - carKmNow, 1000);
+  const carCostPerKm = (includeDep ? carValue/remainingLife : 0) + (consumption/100)*fuelPrice;
+
+  const rows = stops.map(s => {
+    const totalTimeOneWay = s.carMin + (s.trainMin>0 ? transferMin + s.trainMin : 0);
+    const totalCostDay = s.carKm*2*carCostPerKm + (s.zone>0 ? (s.zone*zonePrice)*2 : 0) + (s.zone>0?parking:0);
+    return {...s, totalTimeOneWay, totalCostDay};
+  });
+  const minTime = Math.min(...rows.map(r=>r.totalTimeOneWay));
+  const maxTime = Math.max(...rows.map(r=>r.totalTimeOneWay));
+  const minCost = Math.min(...rows.map(r=>r.totalCostDay));
+  const maxCost = Math.max(...rows.map(r=>r.totalCostDay));
+  const scored = rows.map(r => ({...r,
+    score:(r.totalTimeOneWay-minTime)/Math.max(maxTime-minTime,1) + (r.totalCostDay-minCost)/Math.max(maxCost-minCost,1)
+  })).sort((a,b)=>a.score-b.score);
+  return scored[0].name;
+}
+
+function generatePassTimesMap(){
+  const departure = document.getElementById('departureTimeTop').value || '07:00';
+  const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
+  const recommendedName = pickRecommendedStopName();
+
+  const body = document.getElementById('passTimesBody');
+  body.innerHTML = stops.map(s => {
+    const arrivalStation = addMinutes(departure, s.carMin);
+    const arrivalFira = s.trainMin>0
+      ? addMinutes(departure, s.carMin + transferMin + s.trainMin)
+      : arrivalStation;
+    const isRec = s.name === recommendedName;
+    return `<tr class="${isRec?'recommended':''}">
+      <td class="name">${s.name}${isRec?' <span class="sub">★ recomanada</span>':''}</td>
+      <td class="num-cell" data-label="Sortida de casa">${departure}</td>
+      <td class="num-cell" data-label="Arribada a l'estació">${arrivalStation}</td>
+      <td class="num-cell" data-label="Arribada a Fira">${arrivalFira}</td>
+      <td class="maps-cell" data-label="Google Maps"><a href="${googleMapsDirUrl(s.mapsQuery)}" target="_blank" rel="noopener">Obrir ↗</a></td>
+    </tr>`;
+  }).join('');
+
+  const recStop = stops.find(s => s.name === recommendedName);
+  document.getElementById('mapRecommendedLabel').textContent = '★ ' + recStop.name;
+  document.getElementById('mapEmbed').src = googleMapsEmbedUrl(recStop.mapsQuery);
+  document.getElementById('mapOpenLive').href = googleMapsDirUrl(recStop.mapsQuery);
+
+  document.getElementById('mapOutput').hidden = false;
+  document.getElementById('mapSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.getElementById('generateMapBtnTop').addEventListener('click', generatePassTimesMap);
 </script>
 
 </body>
