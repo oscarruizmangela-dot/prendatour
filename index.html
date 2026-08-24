@@ -175,6 +175,18 @@
     gap:1rem;
     padding:1rem 1.5rem 1.2rem;
   }
+  .top-results-weather-row{
+    grid-column:1 / -1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.7rem;
+  }
+  .weather-chip-compact{
+    background:rgba(255,255,255,0.06);
+    border-color:rgba(255,255,255,0.12);
+  }
+  .weather-chip-compact .weather-place{color:#9fb0c8;}
+  .weather-chip-compact .weather-desc{color:#f0f1f4;}
   .top-results-col-title{
     font-family:'Space Grotesk',sans-serif;
     font-weight:700;
@@ -637,6 +649,7 @@
     .topbar-group .incidents-btn-top{flex:1; justify-content:center;}
     #incidentsPill{align-self:flex-start;}
     .top-results-body{grid-template-columns:1fr; padding:.9rem 1rem 1rem;}
+    .top-results-weather-row{grid-template-columns:1fr;}
     .top-results-panel.open{max-height:60vh;}
   }
 
@@ -807,6 +820,22 @@
       <span class="top-loader-text">Consultant FGC i Trànsit<span class="dots"><span>.</span><span>.</span><span>.</span></span></span>
     </div>
     <div id="topResultsBody" class="top-results-body" hidden>
+      <div class="top-results-weather-row">
+        <div id="topWeatherHome" class="weather-chip weather-chip-compact">
+          <span class="weather-icon">🌡️</span>
+          <div class="weather-text">
+            <div class="weather-place">Castellgalí</div>
+            <div class="weather-desc">—</div>
+          </div>
+        </div>
+        <div id="topWeatherOffice" class="weather-chip weather-chip-compact">
+          <span class="weather-icon">🌡️</span>
+          <div class="weather-text">
+            <div class="weather-place">Oficina</div>
+            <div class="weather-desc">—</div>
+          </div>
+        </div>
+      </div>
       <div class="top-results-col">
         <div class="top-results-col-title">🚆 FGC · R5</div>
         <div id="topFgcResults" class="incidents-list"></div>
@@ -1339,24 +1368,30 @@ async function fetchWeather(lat, lng){
   return { temp, desc, type, precipPercent };
 }
 
-function renderWeatherChip(el, weather){
-  if(!el) return;
-  el.classList.remove('err');
-  const icon = el.querySelector('.weather-icon');
-  const descBox = el.querySelector('.weather-desc');
-  icon.textContent = weatherIconFor(weather.type);
-  let text = '';
-  if(weather.temp != null) text += weather.temp + '°C';
-  if(weather.desc) text += (text ? ' · ' : '') + weather.desc;
-  if(weather.precipPercent != null && weather.precipPercent > 0) text += ` · ${weather.precipPercent}% pluja`;
-  descBox.textContent = text || '—';
+function renderWeatherChip(els, weather){
+  const list = Array.isArray(els) ? els : [els];
+  list.forEach(el => {
+    if(!el) return;
+    el.classList.remove('err');
+    const icon = el.querySelector('.weather-icon');
+    const descBox = el.querySelector('.weather-desc');
+    icon.textContent = weatherIconFor(weather.type);
+    let text = '';
+    if(weather.temp != null) text += weather.temp + '°C';
+    if(weather.desc) text += (text ? ' · ' : '') + weather.desc;
+    if(weather.precipPercent != null && weather.precipPercent > 0) text += ` · ${weather.precipPercent}% pluja`;
+    descBox.textContent = text || '—';
+  });
 }
 
-function renderWeatherError(el){
-  if(!el) return;
-  el.classList.add('err');
-  el.querySelector('.weather-icon').textContent = '⚠';
-  el.querySelector('.weather-desc').textContent = 'No disponible ara mateix';
+function renderWeatherError(els){
+  const list = Array.isArray(els) ? els : [els];
+  list.forEach(el => {
+    if(!el) return;
+    el.classList.add('err');
+    el.querySelector('.weather-icon').textContent = '⚠';
+    el.querySelector('.weather-desc').textContent = 'No disponible ara mateix';
+  });
 }
 
 async function checkIncidents(){
@@ -1389,11 +1424,11 @@ async function checkIncidents(){
 
   // Meteorologia (no bloqueja incidències: es llança en paral·lel i no aporta a hadError general)
   fetchWeather(HOME_COORDS.lat, HOME_COORDS.lng)
-    .then(w => renderWeatherChip(document.getElementById('weatherHome'), w))
-    .catch(() => renderWeatherError(document.getElementById('weatherHome')));
+    .then(w => renderWeatherChip([document.getElementById('weatherHome'), document.getElementById('topWeatherHome')], w))
+    .catch(() => renderWeatherError([document.getElementById('weatherHome'), document.getElementById('topWeatherHome')]));
   fetchWeather(OFFICE_COORDS.lat, OFFICE_COORDS.lng)
-    .then(w => renderWeatherChip(document.getElementById('weatherOffice'), w))
-    .catch(() => renderWeatherError(document.getElementById('weatherOffice')));
+    .then(w => renderWeatherChip([document.getElementById('weatherOffice'), document.getElementById('topWeatherOffice')], w))
+    .catch(() => renderWeatherError([document.getElementById('weatherOffice'), document.getElementById('topWeatherOffice')]));
 
   let fgcCount = 0, trafficCount = 0, hadError = false;
 
