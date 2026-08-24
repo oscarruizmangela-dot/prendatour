@@ -964,6 +964,26 @@
   <p>Ajusta qualsevol valor de dalt per adaptar el simulador a les teves xifres reals.</p>
 </footer>
 
+<!-- Barra d'accions fixa, només visible en mòbil, sempre a l'abast del polze.
+     IMPORTANT: ha d'anar abans del bloc de codi JS de sota, perquè aquest
+     s'executa durant el parsing de la pàgina i necessita que aquests botons
+     ja existeixin al DOM en aquell moment. -->
+<nav id="mobileActionBar" class="mobile-action-bar" aria-label="Accions ràpides">
+  <button id="mobileIncidentsBtn" class="mobile-action-btn">
+    <span class="mobile-action-icon">⟳</span>
+    <span class="mobile-action-label">Incidències</span>
+    <span id="mobileIncidentsDot" class="mobile-action-dot"></span>
+  </button>
+  <button id="mobileAnadaBtn" class="mobile-action-btn" disabled>
+    <span class="mobile-action-icon">🌅</span>
+    <span class="mobile-action-label">Anada</span>
+  </button>
+  <button id="mobileTornadaBtn" class="mobile-action-btn" disabled>
+    <span class="mobile-action-icon">🌇</span>
+    <span class="mobile-action-label">Tornada</span>
+  </button>
+</nav>
+
 <script>
 // Real FGC R5 schedule data: minutes remaining on train from each stop to Europa|Fira
 // (derived from official timetable, direction Barcelona -> Manresa, times reversed)
@@ -1092,7 +1112,11 @@ document.querySelectorAll('#inputs input').forEach(el => {
   el.addEventListener('input', compute);
   el.addEventListener('change', compute);
 });
-compute();
+try{
+  compute();
+}catch(err){
+  console.error('Error inicial a compute():', err);
+}
 
 /* ===== INCIDÈNCIES EN VIU ===== */
 // FGC: Dades Obertes FGC (OpenDataSoft) — dataset "avisos" (avisos de línia)
@@ -1683,23 +1707,6 @@ async function renderReturnTrafficPrediction(recStop, officeDeparture, transferM
   }
 }
 </script>
-
-<!-- Barra d'accions fixa, només visible en mòbil, sempre a l'abast del polze -->
-<nav id="mobileActionBar" class="mobile-action-bar" aria-label="Accions ràpides">
-  <button id="mobileIncidentsBtn" class="mobile-action-btn">
-    <span class="mobile-action-icon">⟳</span>
-    <span class="mobile-action-label">Incidències</span>
-    <span id="mobileIncidentsDot" class="mobile-action-dot"></span>
-  </button>
-  <button id="mobileAnadaBtn" class="mobile-action-btn" disabled>
-    <span class="mobile-action-icon">🌅</span>
-    <span class="mobile-action-label">Anada</span>
-  </button>
-  <button id="mobileTornadaBtn" class="mobile-action-btn" disabled>
-    <span class="mobile-action-icon">🌇</span>
-    <span class="mobile-action-label">Tornada</span>
-  </button>
-</nav>
 
 </body>
 </html>
