@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador — Castellgalí → Fira de Barcelona</title>
+<title>Simulador — Castellgalí ⇄ Fira de Barcelona (anada i tornada)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -528,6 +528,38 @@
 
   .incidents-timestamp{font-family:'IBM Plex Mono',monospace; font-size:.74rem; color:var(--muted);}
 
+  .weather-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.8rem;
+    margin:.9rem 0 1.3rem;
+  }
+  .weather-chip{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:.7rem .9rem;
+  }
+  .weather-chip .weather-icon{font-size:1.7rem; line-height:1; flex-shrink:0;}
+  .weather-chip .weather-place{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    margin-bottom:.1rem;
+  }
+  .weather-chip .weather-desc{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.92rem;
+    color:var(--ink);
+  }
+  .weather-chip.err .weather-desc{font-family:'Inter',sans-serif; font-weight:400; font-size:.78rem; color:var(--bad);}
+
   .incidents-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -581,6 +613,7 @@
   }
   @media (max-width:700px){
     .incidents-grid{grid-template-columns:1fr;}
+    .weather-row{grid-template-columns:1fr;}
     .topbar{padding:.85rem 1rem; text-align:left;}
     .topbar-brand{width:100%; justify-content:flex-start; margin-bottom:.7rem;}
     .topbar-actions{
@@ -738,7 +771,7 @@
 <header class="hero">
   <nav class="topbar">
     <div class="topbar-brand">
-      <span class="dot"></span> Castellgalí → Fira
+      <span class="dot"></span> Castellgalí ⇄ Fira
     </div>
     <div class="topbar-actions">
       <div class="topbar-group">
@@ -785,11 +818,11 @@
     </div>
   </div>
   <div class="wrap" style="padding-top:2.4rem;">
-    <div class="eyebrow"><span class="dot"></span> SIMULADOR DE TRAJECTE · EMPRESA A</div>
-    <h1>Castellgalí → Fira de Barcelona,<br><span>parada per parada.</span></h1>
-    <p class="hero-sub">Combina cotxe fins a qualsevol estació de la línia R5 (FGC) i tren fins a Europa | Fira. Ajusta les teves dades reals de vehicle i tarifa per trobar la combinació més ràpida i la més econòmica.</p>
+    <div class="eyebrow"><span class="dot"></span> SIMULADOR DE JORNADA · EMPRESA A</div>
+    <h1>Castellgalí ⇄ Fira de Barcelona,<br><span>anada i tornada, parada per parada.</span></h1>
+    <p class="hero-sub">Combina cotxe fins a qualsevol estació de la línia R5 (FGC) i tren fins a Europa | Fira, en els dos sentits del dia. Ajusta les teves dades reals de vehicle i tarifa per trobar la combinació més ràpida i la més econòmica, tant per anar com per tornar.</p>
     <div class="hero-route">
-      <span class="chip">🚗 Castellgalí</span> → <span class="chip">🚉 21 estacions possibles</span> → <span class="chip"><b>Europa | Fira</b></span>
+      <span class="chip">🌅 Anada: Castellgalí → Fira</span> · <span class="chip">🌇 Tornada: Fira → Castellgalí</span> · <span class="chip">🚉 21 estacions possibles</span>
     </div>
   </div>
 </header>
@@ -877,10 +910,27 @@
   </section>
 
   <section id="incidents">
-    <h2>Incidències en viu</h2>
-    <p class="section-desc">Consulta en temps real els avisos oficials d'FGC (línia R5) i les incidències viàries del Servei Català de Trànsit properes a la teva ruta, abans de sortir de casa.</p>
+    <h2>Incidències i meteorologia</h2>
+    <p class="section-desc">Consulta en temps real els avisos oficials d'FGC (línia R5), les incidències viàries del Servei Català de Trànsit i el temps a Castellgalí i a l'oficina, abans de sortir de casa.</p>
     <div class="panel incidents-panel">
       <div id="incidentsTimestamp" class="incidents-timestamp"></div>
+
+      <div class="weather-row">
+        <div id="weatherHome" class="weather-chip">
+          <span class="weather-icon">🌡️</span>
+          <div class="weather-text">
+            <div class="weather-place">Castellgalí</div>
+            <div class="weather-desc">—</div>
+          </div>
+        </div>
+        <div id="weatherOffice" class="weather-chip">
+          <span class="weather-icon">🌡️</span>
+          <div class="weather-text">
+            <div class="weather-place">L'Hospitalet (KPMG)</div>
+            <div class="weather-desc">—</div>
+          </div>
+        </div>
+      </div>
 
       <div class="incidents-grid">
         <div class="incidents-col">
@@ -903,10 +953,10 @@
 
   <section id="mapSection">
     <h2>Mapa amb hores de pas</h2>
-    <p class="section-desc">Utilitza el generador de la barra superior (hora de sortida + "Genera mapa") per calcular les hores de pas a cada estació i obrir la ruta a Google Maps. Els resultats apareixeran aquí.</p>
+    <p class="section-desc">Utilitza el generador de la barra superior (hora de sortida de casa per l'anada, hora de sortida de l'oficina per la tornada) per calcular les hores de pas de la teva jornada completa a cada estació i obrir la ruta a Google Maps. Els resultats apareixeran aquí.</p>
     <div class="panel">
       <div id="mapGateNote" class="map-gate-note">
-        ⚠ Comprova primer les incidències i indica la hora de sortida a la barra superior per generar el mapa.
+        ⚠ Comprova primer les incidències (barra superior) i després prem "Genera anada" o "Genera tornada" segons quin tram vulguis calcular.
       </div>
 
       <div id="mapOutput" class="map-output" hidden>
@@ -921,6 +971,7 @@
 
         <div class="table-scroll">
           <h3 class="pass-times-heading">🌅 Anada — Castellgalí → KPMG</h3>
+          <div id="dmStatus" class="map-live-status" hidden></div>
           <table class="results" id="passTimesTable">
             <thead>
               <tr>
@@ -1257,6 +1308,57 @@ function renderErrorMulti(containers, sourceLabel, sourceUrl){
   containers.forEach(c => { if(c) c.innerHTML = html; });
 }
 
+/* ===== METEOROLOGIA (Google Weather API — mateix projecte/clau que Maps i Directions) ===== */
+const HOME_COORDS = { lat: 41.6733, lng: 1.8378 };   // Castellgalí
+const OFFICE_COORDS = { lat: 41.3565, lng: 2.1264 }; // Plaça d'Europa, L'Hospitalet (KPMG)
+
+const WEATHER_ICONS = {
+  CLEAR: '☀️', MOSTLY_CLEAR: '🌤️', PARTLY_CLOUDY: '⛅', MOSTLY_CLOUDY: '🌥️', CLOUDY: '☁️',
+  LIGHT_RAIN_SHOWERS: '🌦️', RAIN_SHOWERS: '🌦️', LIGHT_RAIN: '🌦️', RAIN: '🌧️', HEAVY_RAIN: '🌧️',
+  LIGHT_SNOW_SHOWERS: '🌨️', SNOW_SHOWERS: '🌨️', LIGHT_SNOW: '🌨️', SNOW: '❄️', HEAVY_SNOW: '❄️',
+  THUNDERSTORM: '⛈️', SCATTERED_THUNDERSTORMS: '⛈️', WINDY: '💨', FOG: '🌫️', HAZE: '🌫️',
+};
+function weatherIconFor(type){
+  return WEATHER_ICONS[type] || '🌡️';
+}
+
+async function fetchWeather(lat, lng){
+  const url = 'https://weather.googleapis.com/v1/currentConditions:lookup'
+    + '?key=' + GOOGLE_MAPS_API_KEY
+    + '&location.latitude=' + lat
+    + '&location.longitude=' + lng
+    + '&unitsSystem=METRIC&languageCode=ca';
+  const res = await withTimeout(fetch(url), 8000, 'La meteorologia no ha respost en 8 segons');
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const temp = data.temperature && data.temperature.degrees != null ? Math.round(data.temperature.degrees) : null;
+  const desc = data.weatherCondition && data.weatherCondition.description ? data.weatherCondition.description.text : null;
+  const type = data.weatherCondition ? data.weatherCondition.type : null;
+  const precipPercent = data.precipitation && data.precipitation.probability ? data.precipitation.probability.percent : null;
+  if(temp == null && !desc) throw new Error('Resposta sense dades útils');
+  return { temp, desc, type, precipPercent };
+}
+
+function renderWeatherChip(el, weather){
+  if(!el) return;
+  el.classList.remove('err');
+  const icon = el.querySelector('.weather-icon');
+  const descBox = el.querySelector('.weather-desc');
+  icon.textContent = weatherIconFor(weather.type);
+  let text = '';
+  if(weather.temp != null) text += weather.temp + '°C';
+  if(weather.desc) text += (text ? ' · ' : '') + weather.desc;
+  if(weather.precipPercent != null && weather.precipPercent > 0) text += ` · ${weather.precipPercent}% pluja`;
+  descBox.textContent = text || '—';
+}
+
+function renderWeatherError(el){
+  if(!el) return;
+  el.classList.add('err');
+  el.querySelector('.weather-icon').textContent = '⚠';
+  el.querySelector('.weather-desc').textContent = 'No disponible ara mateix';
+}
+
 async function checkIncidents(){
   const btn = document.getElementById('checkIncidentsBtn');
   const mobileBtn = document.getElementById('mobileIncidentsBtn');
@@ -1284,6 +1386,14 @@ async function checkIncidents(){
 
   const placeholderHtml = '<div class="incidents-placeholder">Consultant…</div>';
   [fgcBox, trafficBox, topFgcBox, topTrafficBox].forEach(c => c.innerHTML = placeholderHtml);
+
+  // Meteorologia (no bloqueja incidències: es llança en paral·lel i no aporta a hadError general)
+  fetchWeather(HOME_COORDS.lat, HOME_COORDS.lng)
+    .then(w => renderWeatherChip(document.getElementById('weatherHome'), w))
+    .catch(() => renderWeatherError(document.getElementById('weatherHome')));
+  fetchWeather(OFFICE_COORDS.lat, OFFICE_COORDS.lng)
+    .then(w => renderWeatherChip(document.getElementById('weatherOffice'), w))
+    .catch(() => renderWeatherError(document.getElementById('weatherOffice')));
 
   let fgcCount = 0, trafficCount = 0, hadError = false;
 
@@ -1432,8 +1542,10 @@ function addMinutes(hhmm, minsToAdd){
   return hh + ':' + mm + overflow;
 }
 
-function pickRecommendedStopName(){
-  // Reuses the same "balanced" logic as compute(), based on current input values
+function pickRecommendedStopName(liveMinutes){
+  // Reuses the same "balanced" logic as compute(), based on current input values.
+  // If liveMinutes (name -> real-time driving minutes from Distance Matrix API) is
+  // provided, it takes priority over the static carMin estimate for that stop.
   const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
   const zonePrice = parseFloat(document.getElementById('zonePrice').value) || 0;
   const fuelPrice = parseFloat(document.getElementById('fuelPrice').value) || 0;
@@ -1447,7 +1559,8 @@ function pickRecommendedStopName(){
   const carCostPerKm = (includeDep ? carValue/remainingLife : 0) + (consumption/100)*fuelPrice;
 
   const rows = stops.map(s => {
-    const totalTimeOneWay = s.carMin + (s.trainMin>0 ? transferMin + s.trainMin + WALK_MIN : 0);
+    const effectiveCarMin = (liveMinutes && liveMinutes[s.name] != null) ? liveMinutes[s.name] : s.carMin;
+    const totalTimeOneWay = effectiveCarMin + (s.trainMin>0 ? transferMin + s.trainMin + WALK_MIN : 0);
     const totalCostDay = s.carKm*2*carCostPerKm + (s.zone>0 ? (s.zone*zonePrice)*2 : 0) + (s.zone>0?parking:0);
     return {...s, totalTimeOneWay, totalCostDay};
   });
@@ -1461,16 +1574,77 @@ function pickRecommendedStopName(){
   return scored[0].name;
 }
 
-function generateAnadaTimes(){
+// Minuts en cotxe reals (trànsit en viu, Distance Matrix API) per a totes les
+// estacions alhora. S'omple quan es genera l'anada; null si encara no s'ha
+// consultat o si la petició ha fallat (en aquest cas, tot fa servir l'estimació estàtica).
+let currentLiveMinutes = null;
+
+async function fetchLiveTrafficForAllStops(){
+  const maps = await withTimeout(
+    loadGoogleMapsScript(), 10000,
+    'El script de Google Maps no ha respost en 10 segons'
+  );
+  const service = new maps.DistanceMatrixService();
+  const destinations = stops.map(s => s.mapsQuery);
+
+  const response = await withTimeout(
+    new Promise((resolve, reject) => {
+      service.getDistanceMatrix({
+        origins: [ORIGIN_QUERY],
+        destinations,
+        travelMode: maps.TravelMode.DRIVING,
+        drivingOptions: { departureTime: new Date(), trafficModel: 'bestguess' },
+      }, (result, status) => {
+        if(status === 'OK' && result) resolve(result);
+        else reject(new Error('Distance Matrix status: ' + status));
+      });
+    }),
+    12000,
+    'La petició a Distance Matrix API no ha respost en 12 segons'
+  );
+
+  const elements = (response.rows[0] && response.rows[0].elements) || [];
+  const updated = {};
+  stops.forEach((s, i) => {
+    const el = elements[i];
+    if(el && el.status === 'OK'){
+      const mins = Math.round((el.duration_in_traffic ? el.duration_in_traffic.value : el.duration.value) / 60);
+      updated[s.name] = mins;
+    }
+  });
+  return updated;
+}
+
+async function generateAnadaTimes(){
   const departure = document.getElementById('departureTimeTop').value || '07:00';
   const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
-  const recommendedName = pickRecommendedStopName();
+  const dmStatus = document.getElementById('dmStatus');
+
+  // Intent de trànsit en viu per a TOTES les estacions alhora (Distance Matrix API)
+  dmStatus.hidden = false;
+  dmStatus.className = 'map-live-status';
+  dmStatus.textContent = 'Consultant trànsit en viu per a les 22 estacions…';
+  try{
+    currentLiveMinutes = await fetchLiveTrafficForAllStops();
+    const count = Object.keys(currentLiveMinutes).length;
+    dmStatus.className = 'map-live-status live';
+    dmStatus.textContent = `🟢 Trànsit en viu aplicat a ${count} de ${stops.length} estacions (Distance Matrix API).`;
+  }catch(err){
+    currentLiveMinutes = null;
+    dmStatus.className = 'map-live-status error';
+    dmStatus.textContent = '⚠ No s\'ha pogut obtenir trànsit en viu per a totes les estacions (' + err.message + '). Es mantenen les nostres estimacions.';
+  }
+
+  const recommendedName = pickRecommendedStopName(currentLiveMinutes);
 
   const body = document.getElementById('passTimesBody');
   body.innerHTML = stops.map(s => {
-    const arrivalStation = addMinutes(departure, s.carMin);
+    const liveMin = currentLiveMinutes && currentLiveMinutes[s.name] != null ? currentLiveMinutes[s.name] : null;
+    const effectiveCarMin = liveMin != null ? liveMin : s.carMin;
+    const carMinLabel = liveMin != null ? `${liveMin} min ⚡` : `${s.carMin} min`;
+    const arrivalStation = addMinutes(departure, effectiveCarMin);
     const arrivalOffice = s.trainMin>0
-      ? addMinutes(departure, s.carMin + transferMin + s.trainMin + WALK_MIN)
+      ? addMinutes(departure, effectiveCarMin + transferMin + s.trainMin + WALK_MIN)
       : arrivalStation;
     const mapsLinks = s.trainMin>0
       ? `<a href="${googleMapsDirUrl(s.mapsQuery)}" target="_blank" rel="noopener">🚗 Cotxe</a> · `
@@ -1480,7 +1654,7 @@ function generateAnadaTimes(){
     const isRec = s.name === recommendedName;
     return `<tr class="${isRec?'recommended':''}">
       <td class="name">${s.name}${isRec?' <span class="sub">★ recomanada</span>':''}</td>
-      <td class="num-cell" data-label="Sortida de casa">${departure}</td>
+      <td class="num-cell" data-label="Sortida de casa">${departure} <span class="sub">(${carMinLabel})</span></td>
       <td class="num-cell" data-label="Arribada a l'estació">${arrivalStation}</td>
       <td class="num-cell" data-label="Arribada a KPMG">${arrivalOffice}</td>
       <td class="maps-cell" data-label="Google Maps">${mapsLinks}</td>
@@ -1501,7 +1675,7 @@ function generateAnadaTimes(){
 function generateTornadaTimes(){
   const officeDeparture = document.getElementById('officeDepartureTop').value || '18:00';
   const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
-  const recommendedName = pickRecommendedStopName();
+  const recommendedName = pickRecommendedStopName(currentLiveMinutes);
 
   // TORNADA (mateixos trams de tren, reals i simètrics; el cotxe es prediu amb Directions API a l'hora real)
   const bodyReturn = document.getElementById('passTimesBodyReturn');
