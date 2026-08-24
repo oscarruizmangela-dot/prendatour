@@ -621,6 +621,12 @@
   }
   .map-live-status.live{background:#eef8f3; color:var(--good); border:1px solid #cfe9dd;}
   .map-live-status.error{background:#fbeeea; color:var(--bad); border:1px solid #f0d3c8;}
+  .pass-times-heading{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:.95rem;
+    margin:0 0 .6rem;
+    color:var(--ink);
+  }
   .map-open-live{
     position:absolute; bottom:.7rem; right:.7rem; z-index:2;
     background:var(--amber); color:#2c2007;
@@ -656,8 +662,10 @@
         <span class="btn-icon">⟳</span> Comprova incidències ara
       </button>
       <span class="topbar-sep"></span>
-      <label for="departureTimeTop" class="topbar-time-label">Sortida</label>
+      <label for="departureTimeTop" class="topbar-time-label">Sortida casa</label>
       <input type="time" id="departureTimeTop" class="topbar-time-input" value="07:00" disabled>
+      <label for="officeDepartureTop" class="topbar-time-label">Sortida oficina</label>
+      <input type="time" id="officeDepartureTop" class="topbar-time-input" value="18:00" disabled>
       <button id="generateMapBtnTop" class="incidents-btn-top map-generate-btn" disabled title="Comprova primer les incidències">
         <span class="btn-icon">🗺️</span> Genera mapa
       </button>
@@ -813,8 +821,10 @@
           <a id="mapOpenLive" class="map-open-live" href="#" target="_blank" rel="noopener">Obrir a Google Maps amb trànsit en viu ↗</a>
         </div>
         <div id="mapLiveStatus" class="map-live-status" hidden></div>
+        <div id="mapLiveStatusReturn" class="map-live-status" hidden></div>
 
         <div class="table-scroll">
+          <h3 class="pass-times-heading">🌅 Anada — Castellgalí → KPMG</h3>
           <table class="results" id="passTimesTable">
             <thead>
               <tr>
@@ -828,7 +838,23 @@
             <tbody id="passTimesBody"></tbody>
           </table>
         </div>
-        <p class="incidents-note">Destinació final: <b>KPMG, Torre Realia BCN (Plaça d'Europa 41-43)</b>. Google Maps no permet combinar cotxe+tren en un sol enllaç, així que cada tram s'obre per separat i amb el mode correcte: <b>🚗 Cotxe</b> (Castellgalí → estació), <b>🚆 Tren</b> (estació → Europa | Fira, calculat per Google amb dades reals de transport públic), i <b>🚶 A peu</b> (Europa | Fira → oficina, uns 4 minuts). El mapa incrustat i les hores de pas de la taula són estimacions pròpies; els tres botons de Maps mostren el trànsit i els horaris reals del moment — un cop allà, pots ajustar manualment l'hora de sortida per veure-hi la previsió.</p>
+
+        <div class="table-scroll">
+          <h3 class="pass-times-heading">🌇 Tornada — KPMG → Castellgalí</h3>
+          <table class="results" id="passTimesTableReturn">
+            <thead>
+              <tr>
+                <th>Estació</th>
+                <th>Sortida de l'oficina</th>
+                <th>Sortida Europa | Fira</th>
+                <th>Arribada a casa</th>
+                <th>Google Maps</th>
+              </tr>
+            </thead>
+            <tbody id="passTimesBodyReturn"></tbody>
+          </table>
+        </div>
+        <p class="incidents-note">Destinació final: <b>KPMG, Torre Realia BCN (Plaça d'Europa 41-43)</b>. Google Maps no permet combinar cotxe+tren en un sol enllaç, així que cada tram s'obre per separat i amb el mode correcte: <b>🚗 Cotxe</b>, <b>🚆 Tren</b> (calculat per Google amb dades reals de transport públic) i <b>🚶 A peu</b>. Els temps de tren per tram provenen de l'horari oficial d'FGC i s'apliquen igual en tots dos sentits (en una via suburbana com la R5, el temps entre estacions és pràcticament simètric). El tram en cotxe de la tornada sí que pot variar molt segons l'hora — per això el mapa en viu de sota fa una predicció de trànsit de Google per a l'hora real de sortida de l'oficina, no només el trànsit d'ara mateix.</p>
       </div>
     </div>
   </section>
@@ -1220,9 +1246,11 @@ async function checkIncidents(){
   // Unlock the "generate map" controls now that the incidents check has finished
   const gateNote = document.getElementById('mapGateNote');
   const topDeparture = document.getElementById('departureTimeTop');
+  const topOfficeDeparture = document.getElementById('officeDepartureTop');
   const topGenerateBtn = document.getElementById('generateMapBtnTop');
   if(gateNote) gateNote.hidden = true;
   if(topDeparture){ topDeparture.disabled = false; }
+  if(topOfficeDeparture){ topOfficeDeparture.disabled = false; }
   if(topGenerateBtn){ topGenerateBtn.disabled = false; topGenerateBtn.title = ''; }
 }
 
@@ -1294,9 +1322,11 @@ function pickRecommendedStopName(){
 
 function generatePassTimesMap(){
   const departure = document.getElementById('departureTimeTop').value || '07:00';
+  const officeDeparture = document.getElementById('officeDepartureTop').value || '18:00';
   const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
   const recommendedName = pickRecommendedStopName();
 
+  // ANADA
   const body = document.getElementById('passTimesBody');
   body.innerHTML = stops.map(s => {
     const arrivalStation = addMinutes(departure, s.carMin);
@@ -1318,6 +1348,31 @@ function generatePassTimesMap(){
     </tr>`;
   }).join('');
 
+  // TORNADA (mateixos trams de tren, reals i simètrics; el cotxe es prediu amb Directions API a l'hora real)
+  const bodyReturn = document.getElementById('passTimesBodyReturn');
+  bodyReturn.innerHTML = stops.map(s => {
+    const departEuropaFira = addMinutes(officeDeparture, WALK_MIN);
+    const arrivalStationReturn = s.trainMin>0
+      ? addMinutes(departEuropaFira, transferMin + s.trainMin)
+      : departEuropaFira;
+    const arrivalHome = s.trainMin>0
+      ? addMinutes(arrivalStationReturn, s.carMin)
+      : addMinutes(officeDeparture, s.carMin);
+    const mapsLinksReturn = s.trainMin>0
+      ? `<a href="${googleMapsDirUrl(EUROPA_FIRA_QUERY, OFFICE_QUERY, 'walking')}" target="_blank" rel="noopener">🚶 A peu</a> · `
+        + `<a href="${googleMapsTransitUrl(EUROPA_FIRA_QUERY, s.mapsQuery)}" target="_blank" rel="noopener">🚆 Tren</a> · `
+        + `<a href="${googleMapsDirUrl(ORIGIN_QUERY, s.mapsQuery, 'driving')}" target="_blank" rel="noopener">🚗 Cotxe</a>`
+      : `<a href="${googleMapsDirUrl(ORIGIN_QUERY, s.mapsQuery, 'driving')}" target="_blank" rel="noopener">🚗 Obrir ↗</a>`;
+    const isRec = s.name === recommendedName;
+    return `<tr class="${isRec?'recommended':''}">
+      <td class="name">${s.name}${isRec?' <span class="sub">★ recomanada</span>':''}</td>
+      <td class="num-cell" data-label="Sortida de l'oficina">${officeDeparture}</td>
+      <td class="num-cell" data-label="Sortida Europa | Fira">${s.trainMin>0 ? departEuropaFira : '—'}</td>
+      <td class="num-cell" data-label="Arribada a casa">${arrivalHome}</td>
+      <td class="maps-cell" data-label="Google Maps">${mapsLinksReturn}</td>
+    </tr>`;
+  }).join('');
+
   const recStop = stops.find(s => s.name === recommendedName);
   document.getElementById('mapRecommendedLabel').textContent = '★ ' + recStop.name;
   document.getElementById('mapEmbedFallback').src = googleMapsEmbedUrl(recStop.mapsQuery);
@@ -1327,6 +1382,7 @@ function generatePassTimesMap(){
   document.getElementById('mapSection').scrollIntoView({behavior:'smooth', block:'start'});
 
   renderLiveGoogleMap(recStop);
+  renderReturnTrafficPrediction(recStop, officeDeparture, transferMin);
 }
 
 document.getElementById('generateMapBtnTop').addEventListener('click', generatePassTimesMap);
@@ -1335,7 +1391,9 @@ document.getElementById('generateMapBtnTop').addEventListener('click', generateP
 // Clau restringida a Maps JavaScript API + Directions API. Si no carrega (clau
 // invàlida, facturació no activada, quota exhaurida...), es manté automàticament
 // el mapa estàtic sense clau (mapEmbedFallback) com a xarxa de seguretat.
-const GOOGLE_MAPS_API_KEY = 'AIzaSyBe4EocVMDDHuzhd_YppFABqqDFkRA2_a4';
+// La clau real es substitueix en temps de desplegament (build command de Render);
+// mai queda escrita en text pla al repositori. Vegeu render-build.sh.
+const GOOGLE_MAPS_API_KEY = '__GOOGLE_MAPS_API_KEY__';
 let _googleMapsLoadPromise = null;
 let _gmap = null, _gmapRenderer = null;
 
@@ -1376,6 +1434,38 @@ function requestDirections(directionsService, request){
   });
 }
 
+// Converteix una hora "HH:MM" + minuts a sumar en un objecte Date real (avui,
+// amb desbordament automàtic a demà), per poder demanar a Directions API una
+// predicció de trànsit per a un moment futur concret (no només "ara mateix").
+function hhmmPlusMinutesToDate(hhmm, minsToAdd){
+  const [h, m] = hhmm.split(':').map(Number);
+  const base = new Date();
+  base.setHours(h, m, 0, 0);
+  base.setMinutes(base.getMinutes() + Math.round(minsToAdd));
+  return base;
+}
+
+function fmtHM(date){
+  return date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
+}
+
+async function getDrivingPrediction(maps, originQuery, destinationQuery, departureDate){
+  const directionsService = new maps.DirectionsService();
+  const result = await withTimeout(
+    requestDirections(directionsService, {
+      origin: originQuery,
+      destination: destinationQuery,
+      travelMode: maps.TravelMode.DRIVING,
+      drivingOptions: { departureTime: departureDate, trafficModel: 'bestguess' },
+    }),
+    10000,
+    'La petició de ruta a Directions API no ha respost en 10 segons'
+  );
+  const leg = result.routes[0].legs[0];
+  const liveMin = Math.round((leg.duration_in_traffic ? leg.duration_in_traffic.value : leg.duration.value) / 60);
+  return { result, liveMin, distanceText: leg.distance.text };
+}
+
 async function renderLiveGoogleMap(recStop){
   const statusBox = document.getElementById('mapLiveStatus');
   const liveDiv = document.getElementById('mapEmbedLive');
@@ -1402,28 +1492,18 @@ async function renderLiveGoogleMap(recStop){
       new maps.TrafficLayer().setMap(_gmap);
     }
 
-    const directionsService = new maps.DirectionsService();
-    const result = await withTimeout(
-      requestDirections(directionsService, {
-        origin: ORIGIN_QUERY,
-        destination: recStop.mapsQuery,
-        travelMode: maps.TravelMode.DRIVING,
-        drivingOptions: { departureTime: new Date(), trafficModel: 'bestguess' },
-      }),
-      10000,
-      'La petició de ruta a Directions API no ha respost en 10 segons'
+    const { result, liveMin, distanceText } = await getDrivingPrediction(
+      maps, ORIGIN_QUERY, recStop.mapsQuery, new Date()
     );
     _gmapRenderer.setDirections(result);
 
-    const leg = result.routes[0].legs[0];
-    const liveMin = Math.round((leg.duration_in_traffic ? leg.duration_in_traffic.value : leg.duration.value) / 60);
     const diff = liveMin - recStop.carMin;
     const diffText = diff === 0 ? 'igual que la nostra estimació'
       : diff > 0 ? `${diff} min més que la nostra estimació (${recStop.carMin} min)`
       : `${Math.abs(diff)} min menys que la nostra estimació (${recStop.carMin} min)`;
 
     statusBox.className = 'map-live-status live';
-    statusBox.innerHTML = `🟢 Google Maps ara mateix: <b>${liveMin} min</b> en cotxe amb trànsit en viu (${leg.distance.text}) — ${diffText}.`;
+    statusBox.innerHTML = `🟢 Anada, ara mateix: <b>${liveMin} min</b> en cotxe amb trànsit en viu (${distanceText}) — ${diffText}.`;
 
     liveDiv.hidden = false;
     fallbackIframe.hidden = true;
@@ -1432,6 +1512,45 @@ async function renderLiveGoogleMap(recStop){
     statusBox.textContent = '⚠ No s\'ha pogut carregar el mapa en viu (' + err.message + '). Es mostra el mapa estàtic de referència.';
     liveDiv.hidden = true;
     fallbackIframe.hidden = false;
+  }
+}
+
+// Predicció de trànsit de Google per al tram en cotxe de la TORNADA, a l'hora
+// real futura en què el trajecte tindria lloc (no "ara mateix"), aprofitant
+// que Directions API accepta una departureTime en el futur.
+async function renderReturnTrafficPrediction(recStop, officeDeparture, transferMin){
+  const statusBox = document.getElementById('mapLiveStatusReturn');
+  statusBox.hidden = false;
+  statusBox.className = 'map-live-status';
+  statusBox.textContent = 'Calculant predicció de trànsit per a la tornada…';
+
+  try{
+    const maps = await withTimeout(
+      loadGoogleMapsScript(), 10000,
+      'El script de Google Maps no ha respost en 10 segons'
+    );
+
+    // Hora real futura en què començaria el tram en cotxe de tornada:
+    // sortida oficina + caminar fins Europa|Fira + transbord + tren fins l'estació
+    const minsUntilDriving = recStop.trainMin>0
+      ? WALK_MIN + transferMin + recStop.trainMin
+      : 0;
+    const departureDate = hhmmPlusMinutesToDate(officeDeparture, minsUntilDriving);
+
+    const { liveMin, distanceText } = await getDrivingPrediction(
+      maps, recStop.mapsQuery, ORIGIN_QUERY, departureDate
+    );
+
+    const diff = liveMin - recStop.carMin;
+    const diffText = diff === 0 ? 'igual que la nostra estimació'
+      : diff > 0 ? `${diff} min més que la nostra estimació (${recStop.carMin} min)`
+      : `${Math.abs(diff)} min menys que la nostra estimació (${recStop.carMin} min)`;
+
+    statusBox.className = 'map-live-status live';
+    statusBox.innerHTML = `🟢 Tornada, predicció per a les <b>${fmtHM(departureDate)}</b>: <b>${liveMin} min</b> en cotxe (${distanceText}) — ${diffText}.`;
+  }catch(err){
+    statusBox.className = 'map-live-status error';
+    statusBox.textContent = '⚠ No s\'ha pogut calcular la predicció de la tornada (' + err.message + ').';
   }
 }
 </script>
