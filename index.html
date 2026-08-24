@@ -647,6 +647,62 @@
   @media (max-width:640px){
     .map-embed{height:260px;}
   }
+
+  /* MOBILE ACTION BAR — always-reachable primary actions on small screens */
+  .mobile-action-bar{
+    display:none;
+  }
+  @media (max-width:700px){
+    body{ padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+    .mobile-action-bar{
+      display:flex;
+      position:fixed;
+      left:0; right:0; bottom:0;
+      z-index:100;
+      background:rgba(21,34,56,0.97);
+      backdrop-filter:blur(8px);
+      border-top:1px solid rgba(255,255,255,0.12);
+      padding:.5rem .5rem calc(.5rem + env(safe-area-inset-bottom, 0px));
+      gap:.45rem;
+      box-shadow:0 -4px 16px rgba(0,0,0,.2);
+    }
+    .mobile-action-btn{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:.15rem;
+      min-height:52px;
+      background:var(--amber);
+      color:#2c2007;
+      border:none;
+      border-radius:12px;
+      font-family:'Inter',sans-serif;
+      font-weight:700;
+      font-size:.68rem;
+      position:relative;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      padding:0 .2rem;
+    }
+    .mobile-action-btn:active{filter:brightness(0.95); transform:scale(0.98);}
+    .mobile-action-btn:disabled{
+      background:rgba(255,255,255,0.08);
+      color:#7c8496;
+    }
+    .mobile-action-icon{font-size:1.15rem; line-height:1;}
+    .mobile-action-btn.loading .mobile-action-icon{animation:spin 0.9s linear infinite;}
+    .mobile-action-dot{
+      position:absolute; top:6px; right:8px;
+      width:9px; height:9px; border-radius:50%;
+      background:#9aa1ad;
+      border:1.5px solid rgba(0,0,0,0.15);
+    }
+    .mobile-action-dot.ok{background:var(--good);}
+    .mobile-action-dot.warn{background:var(--amber); border-color:#8a5a10;}
+    .mobile-action-dot.err{background:var(--bad);}
+  }
 </style>
 </head>
 <body>
@@ -664,10 +720,14 @@
       <span class="topbar-sep"></span>
       <label for="departureTimeTop" class="topbar-time-label">Sortida casa</label>
       <input type="time" id="departureTimeTop" class="topbar-time-input" value="07:00" disabled>
+      <button id="generateAnadaBtnTop" class="incidents-btn-top map-generate-btn" disabled title="Comprova primer les incidències">
+        <span class="btn-icon">🌅</span> Genera anada
+      </button>
+      <span class="topbar-sep"></span>
       <label for="officeDepartureTop" class="topbar-time-label">Sortida oficina</label>
       <input type="time" id="officeDepartureTop" class="topbar-time-input" value="18:00" disabled>
-      <button id="generateMapBtnTop" class="incidents-btn-top map-generate-btn" disabled title="Comprova primer les incidències">
-        <span class="btn-icon">🗺️</span> Genera mapa
+      <button id="generateTornadaBtnTop" class="incidents-btn-top map-generate-btn" disabled title="Comprova primer les incidències">
+        <span class="btn-icon">🌇</span> Genera tornada
       </button>
     </div>
   </nav>
@@ -1139,6 +1199,8 @@ function renderErrorMulti(containers, sourceLabel, sourceUrl){
 
 async function checkIncidents(){
   const btn = document.getElementById('checkIncidentsBtn');
+  const mobileBtn = document.getElementById('mobileIncidentsBtn');
+  const mobileDot = document.getElementById('mobileIncidentsDot');
   const fgcBox = document.getElementById('fgcResults');
   const trafficBox = document.getElementById('trafficResults');
   const topFgcBox = document.getElementById('topFgcResults');
@@ -1151,6 +1213,8 @@ async function checkIncidents(){
 
   btn.disabled = true;
   btn.classList.add('loading');
+  mobileBtn.disabled = true;
+  mobileBtn.classList.add('loading');
   pill.className = 'incidents-pill';
   pill.textContent = 'Comprovant…';
 
@@ -1228,33 +1292,50 @@ async function checkIncidents(){
   stamp.textContent = 'Última comprovació: ' + fmtTimestamp();
   btn.disabled = false;
   btn.classList.remove('loading');
+  mobileBtn.disabled = false;
+  mobileBtn.classList.remove('loading');
   loader.hidden = true;
   body.hidden = false;
 
   const total = fgcCount + trafficCount;
+  let dotClass = 'ok';
   if(hadError && total === 0){
     pill.textContent = '⚠ Error en consultar alguna font';
     pill.classList.add('err');
+    dotClass = 'err';
   } else if(total === 0){
     pill.textContent = '✓ Sense incidències actives';
     pill.classList.add('ok');
+    dotClass = 'ok';
   } else {
     pill.textContent = `⚠ ${total} avís${total>1?'os':''} actiu${total>1?'s':''}`;
     pill.classList.add('warn');
+    dotClass = 'warn';
   }
+  mobileDot.className = 'mobile-action-dot ' + dotClass;
 
   // Unlock the "generate map" controls now that the incidents check has finished
   const gateNote = document.getElementById('mapGateNote');
   const topDeparture = document.getElementById('departureTimeTop');
   const topOfficeDeparture = document.getElementById('officeDepartureTop');
-  const topGenerateBtn = document.getElementById('generateMapBtnTop');
+  const topAnadaBtn = document.getElementById('generateAnadaBtnTop');
+  const topTornadaBtn = document.getElementById('generateTornadaBtnTop');
+  const mobileAnadaBtn = document.getElementById('mobileAnadaBtn');
+  const mobileTornadaBtn = document.getElementById('mobileTornadaBtn');
   if(gateNote) gateNote.hidden = true;
   if(topDeparture){ topDeparture.disabled = false; }
   if(topOfficeDeparture){ topOfficeDeparture.disabled = false; }
-  if(topGenerateBtn){ topGenerateBtn.disabled = false; topGenerateBtn.title = ''; }
+  if(topAnadaBtn){ topAnadaBtn.disabled = false; topAnadaBtn.title = ''; }
+  if(topTornadaBtn){ topTornadaBtn.disabled = false; topTornadaBtn.title = ''; }
+  if(mobileAnadaBtn){ mobileAnadaBtn.disabled = false; }
+  if(mobileTornadaBtn){ mobileTornadaBtn.disabled = false; }
 }
 
 document.getElementById('checkIncidentsBtn').addEventListener('click', checkIncidents);
+
+// Barra d'accions mòbil: reutilitza exactament la mateixa lògica que els botons
+// de la barra superior (mai duplica estat, només delega el clic).
+document.getElementById('mobileIncidentsBtn').addEventListener('click', checkIncidents);
 
 /* ===== MAPA AMB HORES DE PAS (Google Maps) ===== */
 const ORIGIN_QUERY = "Castellgalí, Barcelona";
@@ -1320,13 +1401,11 @@ function pickRecommendedStopName(){
   return scored[0].name;
 }
 
-function generatePassTimesMap(){
+function generateAnadaTimes(){
   const departure = document.getElementById('departureTimeTop').value || '07:00';
-  const officeDeparture = document.getElementById('officeDepartureTop').value || '18:00';
   const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
   const recommendedName = pickRecommendedStopName();
 
-  // ANADA
   const body = document.getElementById('passTimesBody');
   body.innerHTML = stops.map(s => {
     const arrivalStation = addMinutes(departure, s.carMin);
@@ -1347,6 +1426,22 @@ function generatePassTimesMap(){
       <td class="maps-cell" data-label="Google Maps">${mapsLinks}</td>
     </tr>`;
   }).join('');
+
+  const recStop = stops.find(s => s.name === recommendedName);
+  document.getElementById('mapRecommendedLabel').textContent = '★ ' + recStop.name;
+  document.getElementById('mapEmbedFallback').src = googleMapsEmbedUrl(recStop.mapsQuery);
+  document.getElementById('mapOpenLive').href = googleMapsDirUrl(recStop.mapsQuery);
+
+  document.getElementById('mapOutput').hidden = false;
+  document.getElementById('mapSection').scrollIntoView({behavior:'smooth', block:'start'});
+
+  renderLiveGoogleMap(recStop);
+}
+
+function generateTornadaTimes(){
+  const officeDeparture = document.getElementById('officeDepartureTop').value || '18:00';
+  const transferMin = parseFloat(document.getElementById('transferMin').value) || 0;
+  const recommendedName = pickRecommendedStopName();
 
   // TORNADA (mateixos trams de tren, reals i simètrics; el cotxe es prediu amb Directions API a l'hora real)
   const bodyReturn = document.getElementById('passTimesBodyReturn');
@@ -1374,18 +1469,16 @@ function generatePassTimesMap(){
   }).join('');
 
   const recStop = stops.find(s => s.name === recommendedName);
-  document.getElementById('mapRecommendedLabel').textContent = '★ ' + recStop.name;
-  document.getElementById('mapEmbedFallback').src = googleMapsEmbedUrl(recStop.mapsQuery);
-  document.getElementById('mapOpenLive').href = googleMapsDirUrl(recStop.mapsQuery);
-
   document.getElementById('mapOutput').hidden = false;
   document.getElementById('mapSection').scrollIntoView({behavior:'smooth', block:'start'});
 
-  renderLiveGoogleMap(recStop);
   renderReturnTrafficPrediction(recStop, officeDeparture, transferMin);
 }
 
-document.getElementById('generateMapBtnTop').addEventListener('click', generatePassTimesMap);
+document.getElementById('generateAnadaBtnTop').addEventListener('click', generateAnadaTimes);
+document.getElementById('generateTornadaBtnTop').addEventListener('click', generateTornadaTimes);
+document.getElementById('mobileAnadaBtn').addEventListener('click', generateAnadaTimes);
+document.getElementById('mobileTornadaBtn').addEventListener('click', generateTornadaTimes);
 
 /* ===== MAPA REAL AMB TRÀNSIT EN VIU (Maps JavaScript API) ===== */
 // Clau restringida a Maps JavaScript API + Directions API. Si no carrega (clau
@@ -1554,6 +1647,23 @@ async function renderReturnTrafficPrediction(recStop, officeDeparture, transferM
   }
 }
 </script>
+
+<!-- Barra d'accions fixa, només visible en mòbil, sempre a l'abast del polze -->
+<nav id="mobileActionBar" class="mobile-action-bar" aria-label="Accions ràpides">
+  <button id="mobileIncidentsBtn" class="mobile-action-btn">
+    <span class="mobile-action-icon">⟳</span>
+    <span class="mobile-action-label">Incidències</span>
+    <span id="mobileIncidentsDot" class="mobile-action-dot"></span>
+  </button>
+  <button id="mobileAnadaBtn" class="mobile-action-btn" disabled>
+    <span class="mobile-action-icon">🌅</span>
+    <span class="mobile-action-label">Anada</span>
+  </button>
+  <button id="mobileTornadaBtn" class="mobile-action-btn" disabled>
+    <span class="mobile-action-icon">🌇</span>
+    <span class="mobile-action-label">Tornada</span>
+  </button>
+</nav>
 
 </body>
 </html>
