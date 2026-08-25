@@ -816,13 +816,6 @@
     white-space:nowrap;
   }
 
-  .outfit-photo-note{
-    font-family:'Inter',sans-serif;
-    font-size:.72rem;
-    color:var(--muted);
-    font-style:italic;
-    margin:0 0 1.3rem;
-  }
 
   /* AVATAR GENERAT (SVG) — el "model" tecnològic que vesteix l'outfit real */
   /* Franja compacta: avatar petit + info del temps en una sola fila (abans anaven apilats) */
@@ -2351,26 +2344,54 @@ const RAIN_TYPES = ['LIGHT_RAIN_SHOWERS','RAIN_SHOWERS','LIGHT_RAIN','RAIN','HEA
 
 // Retorna la llista de peces recomanades (icona, nom, descripció, cerca a UNIQLO)
 // per a una temperatura, gènere ('home'/'dona') i condició de pluja donades.
+// Fotos reals i verificades de Zara (extretes per Cowork el 25/08/2026 des de
+// zara.com/es/es, comprovant EN ESTOC cadascuna — veure encarrec_cowork_zara_imatges.md).
+// Nota de durabilitat: el catàleg de Zara rota per temporada; revisar en 2-3 mesos.
+const ZARA_IMG = {
+  ultraLightDown: {
+    home: 'https://static.zara.net/assets/public/3287/f802/b9314934809e/b075922ff4b8/04302503481-p/04302503481-p.jpg',
+    dona: 'https://static.zara.net/assets/public/1b80/f48b/cac4402db51c/191ee03a991a/08372288600-p/08372288600-p.jpg',
+  },
+  jerseiPrim: {
+    home: 'https://static.zara.net/assets/public/abab/e4f9/a02f4090b57f/8ca3e9a25bbe/09598454401-p/09598454401-p.jpg',
+    dona: 'https://static.zara.net/assets/public/74ff/369a/d16349c08abe/cff4b73fa20e/02142132400-p/02142132400-p.jpg',
+  },
+  camisa: {
+    home: 'https://static.zara.net/assets/public/5342/19c0/54ae486cb04b/537bc1a14d1d/01957102250-p/01957102250-p.jpg',
+    dona: 'https://static.zara.net/assets/public/9112/c75e/f8734d72ab85/7f270200d07e/07001640251-p/07001640251-p.jpg',
+  },
+  camisetaBasica: {
+    home: 'https://static.zara.net/assets/public/2692/a590/ec404fda858c/1406bf4fa2b0/05584401250-p/05584401250-p.jpg',
+    dona: 'https://static.zara.net/assets/public/cefe/c829/1fff4165a43f/76c7e3e2c816/01934240407-p/01934240407-p.jpg',
+  },
+  pantalonCorto: {
+    home: 'https://static.zara.net/assets/public/17c9/4c3e/d61348fb87f1/f6b48663065b/04391404800-p/04391404800-p.jpg',
+    dona: 'https://static.zara.net/assets/public/bfe8/03e6/c2e44e619463/d08d15392c44/02060570800-p/02060570800-p.jpg',
+  },
+};
+
 function getOutfitItems(tempC, gender, precipPercent, weatherType, store, companyType){
   const g = gender === 'dona' ? 'mujer' : 'hombre';
   const isDona = gender === 'dona';
+  const genderKey = isDona ? 'dona' : 'home';
   const band = outfitTempBand(tempC).key;
   const isRainy = (precipPercent != null && precipPercent >= 40) || RAIN_TYPES.includes(weatherType);
   store = store || 'uniqlo';
   companyType = companyType || 'casual';
 
   // Modificador d'estil segons el tipus d'empresa: ajusta la paraula de cerca i
-  // el nom de la peça (no canvia les fotos, que segueixen sent d'UNIQLO real).
+  // el nom de la peça (no canvia les fotos).
   const STYLE = {
     formal:   { word: 'formal', shirtName: 'Camisa', pantName: 'Pantalón de vestir' },
     casual:   { word: 'casual', shirtName: 'Camiseta', pantName: 'Pantalón' },
     creative: { word: 'color estampado', shirtName: 'Camiseta con print', pantName: 'Pantalón color' },
   }[companyType] || { word: 'casual', shirtName: 'Camiseta', pantName: 'Pantalón' };
 
-  // Fotos reals de producte — NOMÉS verificades per a UNIQLO (extretes de les
-  // fitxes oficials uniqlo.com/es). Per a Zara i H&M encara no tenim cap URL
-  // d'imatge comprovada, així que la targeta cau honestament a la icona.
-  const IMG = store !== 'uniqlo' ? {} : {
+  // Fotos reals de producte, verificades per botiga:
+  // - UNIQLO: extretes de les fitxes oficials uniqlo.com/es.
+  // - Zara: extretes per Cowork de zara.com/es/es, en estoc a 25/08/2026.
+  // - H&M: encara no verificades — cau honestament a la icona.
+  const IMG = store === 'uniqlo' ? {
     ultraLightDown: isDona
       ? 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450310/item/goods_32_450310_3x4.jpg?width=600'
       : 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470067/item/goods_19_470067_3x4.jpg?width=600',
@@ -2386,36 +2407,51 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType, store, compan
     shorts: isDona
       ? 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/479150/item/goods_36_479150_3x4.jpg?width=600'
       : 'https://image.uniqlo.com/UQ/ST3/eu/imagesgoods/475827/item/eugoods_01_475827_3x4.jpg?width=600',
-  };
+  } : store === 'zara' ? {
+    ultraLightDown: ZARA_IMG.ultraLightDown[genderKey],
+    heattechUltraWarm: ZARA_IMG.jerseiPrim[genderKey], // Zara no té HEATTECH; fem servir el jersei equivalent
+    airism: companyType === 'formal' ? ZARA_IMG.camisa[genderKey] : ZARA_IMG.camisetaBasica[genderKey],
+    chino: undefined, // no verificat (bonus no fet per Cowork)
+    shorts: ZARA_IMG.pantalonCorto[genderKey],
+  } : {};
+
+  // Noms/descripcions neutres quan la botiga no és UNIQLO (evita dir "Ultra Light
+  // Down" o "HEATTECH", que són noms de producte propis d'UNIQLO).
+  const isUniqlo = store === 'uniqlo';
 
   // TOP: la peça principal de la part superior del cos
   let top;
   if(band === 'cold'){
-    top = {icon:'🧥', name:'Ultra Light Down', desc:'Abric acolchat, càlid i sorprenentment lleuger — la capa exterior del dia.', q:`ultra light down ${companyType==='formal'?'abrigo elegante':''} ${g}`, img:IMG.ultraLightDown};
+    top = isUniqlo
+      ? {icon:'🧥', name:'Ultra Light Down', desc:'Abric acolchat, càlid i sorprenentment lleuger — la capa exterior del dia.', q:`ultra light down ${companyType==='formal'?'abrigo elegante':''} ${g}`, img:IMG.ultraLightDown}
+      : {icon:'🧥', name:'Chaqueta acolchada', desc:'Abric acolchat, càlid i lleuger — la capa exterior del dia.', q:`cazadora chaqueta acolchada ${g}`, img:IMG.ultraLightDown};
   } else if(band === 'cool'){
-    top = {icon:'🌡️', name:'HEATTECH Ultracàlid', desc:'Capa interior tèrmica, 2,25 vegades més càlida que el HEATTECH normal.', q:`HEATTECH ultra calido ${g}`, img:IMG.heattechUltraWarm};
+    top = isUniqlo
+      ? {icon:'🌡️', name:'HEATTECH Ultracàlid', desc:'Capa interior tèrmica, 2,25 vegades més càlida que el HEATTECH normal.', q:`HEATTECH ultra calido ${g}`, img:IMG.heattechUltraWarm}
+      : {icon:'🧶', name:'Jersei prim', desc:'Capa còmoda per a dies freds, sense arribar a l\'abric.', q:`jersey punto ${g}`, img:IMG.heattechUltraWarm};
   } else {
-    top = {icon:'👕', name: STYLE.shirtName + (band==='mild'?' manga larga':''), desc: (companyType==='formal' ? 'Versió arreglada, adequada per a un entorn corporatiu. ' : '') + (band === 'mild' ? 'Base transpirable per a un dia fresc-templat.' : 'Teixit fresc al tacte, ideal per a calor moderada o intensa.'), q:`${STYLE.shirtName.toLowerCase()} ${STYLE.word} ${g}`, img: companyType==='casual' ? IMG.airism : undefined};
+    top = {icon:'👕', name: STYLE.shirtName + (band==='mild'?' manga larga':''), desc: (companyType==='formal' ? 'Versió arreglada, adequada per a un entorn corporatiu. ' : '') + (band === 'mild' ? 'Base transpirable per a un dia fresc-templat.' : 'Teixit fresc, ideal per a calor moderada o intensa.'), q:`${STYLE.shirtName.toLowerCase()} ${STYLE.word} ${g}`, img: IMG.airism};
   }
 
   // BOTTOM: la peça de la part inferior
   let bottom;
   if(band === 'hot' && companyType !== 'formal'){
-    bottom = {icon:'🩳', name: isDona ? 'Pantalón corto / legging AIRism' : 'Pantalón corto', desc:'Teixit transpirable per no passar calor.', q:`pantalon corto ligero ${g}`, img:IMG.shorts};
+    bottom = {icon:'🩳', name: (isUniqlo && isDona) ? 'Pantalón corto / legging AIRism' : 'Pantalón corto', desc:'Teixit transpirable per no passar calor.', q:`pantalon corto bermuda ${g}`, img:IMG.shorts};
   } else {
-    bottom = {icon:'👖', name: STYLE.pantName, desc:'Combina bé amb qualsevol part de dalt i aguanta tot el dia.', q:`${STYLE.pantName.toLowerCase()} ${STYLE.word} ${g}`, img: companyType==='casual' ? IMG.chino : undefined};
+    bottom = {icon:'👖', name: STYLE.pantName, desc:'Combina bé amb qualsevol part de dalt i aguanta tot el dia.', q:`${STYLE.pantName.toLowerCase()} ${STYLE.word} ${g}`, img: IMG.chino};
   }
 
-  // ACCESSORIS: complements sense foto verificada (icona)
+  // ACCESSORIS: complements sense foto verificada (icona), excepte l'abric de
+  // reforç en banda freda, que reutilitza la mateixa foto verificada del top.
   const accessories = [];
   if(band === 'cold'){
     accessories.push({icon:'🧶', name:'Jersei de punt gruixut', desc:'Segona capa que atrapa la calor sense abultar.', q:`jersey punto grueso ${g}`});
     accessories.push({icon:'🧤', name:'Bufanda i guants', desc:'Accessoris tèrmics per rematar el look.', q:`bufanda guantes accesorios ${g}`});
   } else if(band === 'cool'){
     accessories.push({icon:'🧶', name:'Sudadera o jersei fi', desc:'Capa intermèdia còmoda per al dia a dia.', q:`sudadera jersey ${g}`});
-    accessories.push({icon:'🧥', name:'Chaqueta acolchada', desc:'Ultra Light Down o similar per a l\'exterior.', q:`chaqueta acolchada ligera ${g}`, img: companyType==='casual' ? IMG.ultraLightDown : undefined});
+    accessories.push({icon:'🧥', name:'Chaqueta acolchada', desc:'Reforç per a l\'exterior si refresca.', q:`chaqueta acolchada ligera ${g}`, img: IMG.ultraLightDown});
   } else if(band === 'mild'){
-    accessories.push({icon:'🧥', name: companyType==='formal' ? 'Americana / blazer' : 'Chaqueta BLOCKTECH', desc:'Lleugera i tallavent, ideal per anar i tornar de l\'oficina.', q:`${companyType==='formal'?'americana blazer':'chaqueta ligera blocktech'} ${g}`});
+    accessories.push({icon:'🧥', name: companyType==='formal' ? 'Americana / blazer' : 'Chaqueta lleugera', desc:'Lleugera i tallavent, ideal per anar i tornar de l\'oficina.', q:`${companyType==='formal'?'americana blazer':'chaqueta ligera cortavientos'} ${g}`});
   } else if(band === 'warm'){
     if(companyType !== 'formal') accessories.push({icon:'👔', name:'Camisa lleugera o polo', desc:'Look net i fresc per a l\'oficina.', q:`camisa ligera polo ${g}`});
   } else {
@@ -2423,7 +2459,7 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType, store, compan
   }
 
   if(isRainy){
-    accessories.push({icon:'☔', name:'BLOCKTECH impermeable', desc:'Sembla que plourà — porta una capa impermeable/tallavent per al trajecte.', q:`BLOCKTECH impermeable ${g}`, rain:true});
+    accessories.push({icon:'☔', name:'Impermeable / cortavientos', desc:'Sembla que plourà — porta una capa impermeable per al trajecte.', q:`chaqueta impermeable cortavientos ${g}`, rain:true});
   }
 
   return { top, bottom, accessories };
@@ -2616,9 +2652,13 @@ function renderOutfit(gender, companyType, store){
   document.getElementById('outfitHero').innerHTML = `
     ${compactItemHtml(top, "Part de dalt")}
     ${compactItemHtml(bottom, "Part de baix")}
-    <p class="outfit-photo-note">${store === 'uniqlo'
-      ? 'Les fotos són tal com les publica UNIQLO — la de la part de dalt pot incloure altres peces del model que no formen part d\'aquesta recomanació.'
-      : `Encara no tenim fotos verificades de producte per a ${storeLabel} — els enllaços porten a la cerca real a la seva web.`}</p>
+    <p class="outfit-photo-note">${
+      store === 'uniqlo'
+        ? 'Les fotos són tal com les publica UNIQLO — la de la part de dalt pot incloure altres peces del model que no formen part d\'aquesta recomanació.'
+        : store === 'zara'
+        ? 'Fotos verificades a zara.com/es/es (article en estoc a 25/08/2026) — el catàleg de Zara rota per temporada, així que poden caducar abans que les d\'UNIQLO.'
+        : `Encara no tenim fotos verificades de producte per a ${storeLabel} — els enllaços porten a la cerca real a la seva web.`
+    }</p>
   `;
 
   document.getElementById('outfitCards').innerHTML = accessories.map(it => `
