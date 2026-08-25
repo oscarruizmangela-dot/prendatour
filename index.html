@@ -653,6 +653,174 @@
     .top-results-panel.open{max-height:60vh;}
   }
 
+  /* OUTFIT SECTION */
+  .outfit-panel{
+    border-radius:var(--radius);
+    padding:1.6rem;
+    background:#fff;
+    border:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+    transition:background .5s ease;
+  }
+  .outfit-panel.temp-cold{background:linear-gradient(160deg, #eaf2fb 0%, #fff 55%);}
+  .outfit-panel.temp-cool{background:linear-gradient(160deg, #eaf6f4 0%, #fff 55%);}
+  .outfit-panel.temp-mild{background:linear-gradient(160deg, #f2f7ec 0%, #fff 55%);}
+  .outfit-panel.temp-warm{background:linear-gradient(160deg, #fef3e6 0%, #fff 55%);}
+  .outfit-panel.temp-hot{background:linear-gradient(160deg, #fdece6 0%, #fff 55%);}
+
+  .outfit-temp-preview{
+    display:flex; align-items:center; gap:.9rem;
+    margin-bottom:1.1rem;
+  }
+  .outfit-temp-icon{font-size:2.6rem; line-height:1;}
+  .outfit-temp-value{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:1.5rem;
+    color:var(--ink);
+  }
+  .outfit-temp-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+  }
+  .outfit-prompt{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:1rem;
+    margin:0 0 .9rem;
+    color:var(--ink);
+  }
+  .outfit-gender-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.8rem;
+  }
+  .outfit-gender-btn{
+    display:flex; flex-direction:column; align-items:center; gap:.4rem;
+    padding:1.2rem .8rem;
+    min-height:88px;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    border-radius:14px;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:.92rem;
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease, border-color .15s ease, background .15s ease;
+  }
+  .outfit-gender-btn:hover{border-color:var(--rail); background:#fff;}
+  .outfit-gender-btn:active{transform:scale(0.97);}
+  .outfit-gender-icon{font-size:1.9rem;}
+
+  .outfit-header{
+    display:flex; align-items:center; gap:1rem;
+    margin-bottom:1.3rem;
+    padding-bottom:1.1rem;
+    border-bottom:1px dashed var(--line);
+  }
+  .outfit-header-icon{font-size:2.4rem;}
+  .outfit-header-temp{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:1.35rem;
+    color:var(--ink);
+  }
+  .outfit-header-desc{
+    font-family:'Inter',sans-serif;
+    font-size:.84rem;
+    color:var(--muted);
+    margin-top:.15rem;
+  }
+  .outfit-header-gender{
+    margin-left:auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.7rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    background:var(--paper-2);
+    padding:.3rem .6rem;
+    border-radius:100px;
+    white-space:nowrap;
+  }
+
+  .outfit-cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));
+    gap:1rem;
+  }
+  .outfit-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:1.1rem 1.1rem 1rem;
+    display:flex;
+    flex-direction:column;
+    gap:.5rem;
+    opacity:0;
+    transform:translateY(10px);
+    animation:outfitCardIn .45s ease forwards;
+  }
+  @keyframes outfitCardIn{ to{opacity:1; transform:translateY(0);} }
+  .outfit-card-icon{
+    font-size:2rem;
+    width:52px; height:52px;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:50%;
+  }
+  .outfit-card-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.95rem;
+    color:var(--ink);
+  }
+  .outfit-card-desc{
+    font-family:'Inter',sans-serif;
+    font-size:.8rem;
+    color:var(--muted);
+    line-height:1.4;
+    flex-grow:1;
+  }
+  .outfit-card-link{
+    display:inline-flex; align-items:center; gap:.3rem;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:.78rem;
+    color:var(--rail);
+    text-decoration:none;
+    margin-top:.2rem;
+  }
+  .outfit-card-link:hover{text-decoration:underline;}
+  .outfit-card.rain-flag{border-color:#8fbfe0; background:#f2f8fd;}
+
+  .outfit-change-btn{
+    margin-top:1.3rem;
+    background:none;
+    border:1.5px solid var(--line);
+    color:var(--muted);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:.8rem;
+    padding:.55rem 1rem;
+    border-radius:100px;
+    cursor:pointer;
+  }
+  .outfit-change-btn:hover{border-color:var(--rail); color:var(--rail);}
+
+  @media (max-width:640px){
+    .outfit-cards{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));}
+    .outfit-panel{padding:1.2rem 1rem;}
+    .outfit-header{flex-wrap:wrap;}
+    .outfit-header-gender{margin-left:0;}
+  }
+
   /* MAP SECTION */
   .map-gate-note{
     color:var(--muted);
@@ -977,6 +1145,41 @@
       </div>
 
       <p class="incidents-note">Font: <a href="https://dadesobertes.fgc.cat/explore/dataset/avisos/" target="_blank" rel="noopener">Dades Obertes FGC</a> i <a href="https://www.gencat.cat/transit/opendata/001_RSS.xml" target="_blank" rel="noopener">feed RSS del Servei Català de Trànsit</a>. Són fonts de consulta pública; per <b>comunicar</b> una incidència, truca al <a href="tel:012">012 (Trànsit)</a> o contacta amb <a href="https://www.fgc.cat/atencio-al-client" target="_blank" rel="noopener">Atenció al Client d'FGC</a>.</p>
+    </div>
+  </section>
+
+  <section id="outfitSection">
+    <h2>Què em poso avui? 👕</h2>
+    <p class="section-desc">Amb la temperatura prevista a l'oficina (Plaça d'Europa), et proposem un outfit amb peces d'UNIQLO — cada peça enllaça directament a la cerca real a uniqlo.com.</p>
+    <div class="outfit-panel" id="outfitPanel">
+      <div id="outfitGateNote" class="map-gate-note">
+        ⚠ Comprova primer les incidències (barra superior) per obtenir la temperatura de l'oficina.
+      </div>
+
+      <div id="outfitGenderPicker" class="outfit-gender-picker" hidden>
+        <div class="outfit-temp-preview">
+          <span id="outfitPreviewIcon" class="outfit-temp-icon">🌡️</span>
+          <div>
+            <div class="outfit-temp-value" id="outfitPreviewTemp">—</div>
+            <div class="outfit-temp-label">a l'oficina ara mateix</div>
+          </div>
+        </div>
+        <p class="outfit-prompt">Ets home o dona, per personalitzar l'outfit?</p>
+        <div class="outfit-gender-buttons">
+          <button id="outfitGenderMen" class="outfit-gender-btn">
+            <span class="outfit-gender-icon">👔</span> Home
+          </button>
+          <button id="outfitGenderWomen" class="outfit-gender-btn">
+            <span class="outfit-gender-icon">👗</span> Dona
+          </button>
+        </div>
+      </div>
+
+      <div id="outfitResult" class="outfit-result" hidden>
+        <div id="outfitHeader" class="outfit-header"></div>
+        <div id="outfitCards" class="outfit-cards"></div>
+        <button id="outfitChangeGender" class="outfit-change-btn">↺ Canviar de gènere</button>
+      </div>
     </div>
   </section>
 
@@ -1340,6 +1543,7 @@ function renderErrorMulti(containers, sourceLabel, sourceUrl){
 /* ===== METEOROLOGIA (Google Weather API — mateix projecte/clau que Maps i Directions) ===== */
 const HOME_COORDS = { lat: 41.6733, lng: 1.8378 };   // Castellgalí
 const OFFICE_COORDS = { lat: 41.3565, lng: 2.1264 }; // Plaça d'Europa, L'Hospitalet (KPMG)
+let lastOfficeWeather = null; // omplert quan es comprova el temps a l'oficina; usat per l'outfit
 
 const WEATHER_ICONS = {
   CLEAR: '☀️', MOSTLY_CLEAR: '🌤️', PARTLY_CLOUDY: '⛅', MOSTLY_CLOUDY: '🌥️', CLOUDY: '☁️',
@@ -1427,7 +1631,11 @@ async function checkIncidents(){
     .then(w => renderWeatherChip([document.getElementById('weatherHome'), document.getElementById('topWeatherHome')], w))
     .catch(() => renderWeatherError([document.getElementById('weatherHome'), document.getElementById('topWeatherHome')]));
   fetchWeather(OFFICE_COORDS.lat, OFFICE_COORDS.lng)
-    .then(w => renderWeatherChip([document.getElementById('weatherOffice'), document.getElementById('topWeatherOffice')], w))
+    .then(w => {
+      renderWeatherChip([document.getElementById('weatherOffice'), document.getElementById('topWeatherOffice')], w);
+      lastOfficeWeather = w;
+      unlockOutfitPicker();
+    })
     .catch(() => renderWeatherError([document.getElementById('weatherOffice'), document.getElementById('topWeatherOffice')]));
 
   let fgcCount = 0, trafficCount = 0, hadError = false;
@@ -1915,6 +2123,115 @@ async function renderReturnTrafficPrediction(recStop, officeDeparture, transferM
     statusBox.textContent = '⚠ No s\'ha pogut calcular la predicció de la tornada (' + err.message + ').';
   }
 }
+
+/* ===== OUTFIT UNIQLO (basat en la temperatura real a l'oficina) ===== */
+
+function uniqloSearchUrl(query){
+  return 'https://www.uniqlo.com/es/es/search?q=' + encodeURIComponent(query);
+}
+
+// Bandes de temperatura -> descripció i classe visual del panell
+function outfitTempBand(tempC){
+  if(tempC < 5)  return { key:'cold', label:'molt fred',      cssClass:'temp-cold' };
+  if(tempC < 12) return { key:'cool', label:'fred',           cssClass:'temp-cool' };
+  if(tempC < 18) return { key:'mild', label:'fresc/templat',  cssClass:'temp-mild' };
+  if(tempC < 25) return { key:'warm', label:'càlid',          cssClass:'temp-warm' };
+  return               { key:'hot',  label:'calorós',        cssClass:'temp-hot'  };
+}
+
+const RAIN_TYPES = ['LIGHT_RAIN_SHOWERS','RAIN_SHOWERS','LIGHT_RAIN','RAIN','HEAVY_RAIN','THUNDERSTORM','SCATTERED_THUNDERSTORMS'];
+
+// Retorna la llista de peces recomanades (icona, nom, descripció, cerca a UNIQLO)
+// per a una temperatura, gènere ('home'/'dona') i condició de pluja donades.
+function getOutfitItems(tempC, gender, precipPercent, weatherType){
+  const g = gender === 'dona' ? 'mujer' : 'hombre';
+  const band = outfitTempBand(tempC).key;
+  const isRainy = (precipPercent != null && precipPercent >= 40) || RAIN_TYPES.includes(weatherType);
+  const items = [];
+
+  if(band === 'cold'){
+    items.push({icon:'🧣', name:'HEATTECH Ultracàlid', desc:'La capa interior més càlida d\'UNIQLO — imprescindible amb fred intens.', q:`HEATTECH ultra calido ${g}`});
+    items.push({icon:'🧶', name:'Jersei de punt gruixut', desc:'Segona capa que atrapa la calor sense abultar.', q:`jersey punto grueso ${g}`});
+    items.push({icon:'🧥', name:'Ultra Light Down', desc:'Abric acolchat, càlid i sorprenentment lleuger.', q:`ultra light down ${g}`});
+    items.push({icon:'🧤', name:'Bufanda i guants', desc:'Accessoris tèrmics per rematar el look.', q:`bufanda guantes accesorios ${g}`});
+  } else if(band === 'cool'){
+    items.push({icon:'🌡️', name:'HEATTECH Extra Càlid', desc:'Capa interior tèrmica pensada per a dies freds.', q:`HEATTECH extra calido ${g}`});
+    items.push({icon:'🧶', name:'Sudadera o jersei fi', desc:'Capa intermèdia còmoda per al dia a dia.', q:`sudadera jersey ${g}`});
+    items.push({icon:'🧥', name:'Chaqueta acolchada', desc:'Ultra Light Down o similar per a l\'exterior.', q:`chaqueta acolchada ligera ${g}`});
+  } else if(band === 'mild'){
+    items.push({icon:'👕', name:'Camisa o camiseta màniga llarga', desc:'Base còmoda per a temperatures fresques.', q:`camisa manga larga ${g}`});
+    items.push({icon:'🧥', name:'Chaqueta BLOCKTECH', desc:'Lleugera i tallavent, ideal per anar i tornar de l\'oficina.', q:`chaqueta ligera blocktech ${g}`});
+    items.push({icon:'👖', name:'Pantalón xino', desc:'Combina bé amb qualsevol part de dalt.', q:`pantalon chino ${g}`});
+  } else if(band === 'warm'){
+    items.push({icon:'👕', name:'Camiseta AIRism', desc:'Teixit transpirable, fresc al tacte per a calor moderada.', q:`camiseta AIRism ${g}`});
+    items.push({icon:'👔', name:'Camisa lleugera o polo', desc:'Look net i fresc per a l\'oficina.', q:`camisa ligera polo ${g}`});
+    items.push({icon:'👖', name:'Pantalón lleuger', desc:'Talls frescos per a un dia templat-càlid.', q:`pantalon ligero ${g}`});
+  } else {
+    items.push({icon:'👕', name:'Camiseta AIRism', desc:'Frescor màxima per als dies més calorosos.', q:`camiseta AIRism ${g}`});
+    items.push({icon:'🩳', name:'Pantalón curt o lleuger', desc:'Teixits transpirables per no passar calor.', q:`pantalon corto ligero ${g}`});
+    items.push({icon:'🧢', name:'Gorra', desc:'Protecció extra si camines una estona al sol.', q:`gorra accesorios`});
+  }
+
+  if(isRainy){
+    items.push({icon:'☔', name:'BLOCKTECH impermeable', desc:'Sembla que plourà — porta una capa impermeable/tallavent per al trajecte.', q:`BLOCKTECH impermeable ${g}`, rain:true});
+  }
+
+  return items;
+}
+
+function renderOutfit(gender){
+  if(!lastOfficeWeather) return;
+  const tempC = lastOfficeWeather.temp != null ? lastOfficeWeather.temp : 18;
+  const band = outfitTempBand(tempC);
+  const items = getOutfitItems(tempC, gender, lastOfficeWeather.precipPercent, lastOfficeWeather.type);
+
+  const panel = document.getElementById('outfitPanel');
+  panel.className = 'outfit-panel ' + band.cssClass;
+
+  document.getElementById('outfitGenderPicker').hidden = true;
+  const result = document.getElementById('outfitResult');
+  result.hidden = false;
+
+  const headerIcon = weatherIconFor(lastOfficeWeather.type);
+  document.getElementById('outfitHeader').innerHTML = `
+    <span class="outfit-header-icon">${headerIcon}</span>
+    <div>
+      <div class="outfit-header-temp">${tempC}°C a l'oficina · ${band.label}</div>
+      <div class="outfit-header-desc">${lastOfficeWeather.desc || ''}</div>
+    </div>
+    <span class="outfit-header-gender">${gender === 'dona' ? '👗 Dona' : '👔 Home'}</span>
+  `;
+
+  document.getElementById('outfitCards').innerHTML = items.map((it, i) => `
+    <div class="outfit-card${it.rain ? ' rain-flag' : ''}" style="animation-delay:${i * 0.08}s">
+      <div class="outfit-card-icon">${it.icon}</div>
+      <div class="outfit-card-name">${it.name}</div>
+      <div class="outfit-card-desc">${it.desc}</div>
+      <a class="outfit-card-link" href="${uniqloSearchUrl(it.q)}" target="_blank" rel="noopener">Veure a UNIQLO ↗</a>
+    </div>
+  `).join('');
+}
+
+function unlockOutfitPicker(){
+  const gateNote = document.getElementById('outfitGateNote');
+  const picker = document.getElementById('outfitGenderPicker');
+  if(!lastOfficeWeather) return;
+  if(gateNote) gateNote.hidden = true;
+  if(picker){
+    picker.hidden = false;
+    document.getElementById('outfitPreviewIcon').textContent = weatherIconFor(lastOfficeWeather.type);
+    document.getElementById('outfitPreviewTemp').textContent =
+      (lastOfficeWeather.temp != null ? lastOfficeWeather.temp + '°C' : '—') +
+      (lastOfficeWeather.desc ? ' · ' + lastOfficeWeather.desc : '');
+  }
+}
+
+document.getElementById('outfitGenderMen').addEventListener('click', () => renderOutfit('home'));
+document.getElementById('outfitGenderWomen').addEventListener('click', () => renderOutfit('dona'));
+document.getElementById('outfitChangeGender').addEventListener('click', () => {
+  document.getElementById('outfitResult').hidden = true;
+  document.getElementById('outfitGenderPicker').hidden = false;
+});
 </script>
 
 </body>
