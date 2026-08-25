@@ -736,138 +736,33 @@
 
   .outfit-header{
     display:flex; align-items:center; gap:1rem;
-    margin-bottom:1.3rem;
-    padding-bottom:1.1rem;
-    border-bottom:1px dashed var(--line);
   }
-  .outfit-header-icon{font-size:2.4rem;}
+  .outfit-header-icon{font-size:1.9rem;}
   .outfit-header-temp{
     font-family:'Space Grotesk',sans-serif;
     font-weight:700;
-    font-size:1.35rem;
+    font-size:1.1rem;
     color:var(--ink);
   }
   .outfit-header-desc{
     font-family:'Inter',sans-serif;
-    font-size:.84rem;
+    font-size:.8rem;
     color:var(--muted);
-    margin-top:.15rem;
+    margin-top:.1rem;
   }
   .outfit-header-gender{
     margin-left:auto;
     font-family:'IBM Plex Mono',monospace;
-    font-size:.7rem;
+    font-size:.68rem;
     text-transform:uppercase;
     letter-spacing:.04em;
     color:var(--muted);
     background:var(--paper-2);
-    padding:.3rem .6rem;
+    padding:.28rem .55rem;
     border-radius:var(--r-pill);
     white-space:nowrap;
   }
 
-  .outfit-cards{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));
-    gap:1rem;
-  }
-  .outfit-card{
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:var(--r-lg);
-    padding:1.1rem 1.1rem 1rem;
-    display:flex;
-    flex-direction:column;
-    gap:.5rem;
-    opacity:0;
-    transform:translateY(10px);
-    animation:outfitCardIn .45s ease forwards;
-  }
-  @keyframes outfitCardIn{ to{opacity:1; transform:translateY(0);} }
-  .outfit-card-icon{
-    font-size:2rem;
-    width:52px; height:52px;
-    display:flex; align-items:center; justify-content:center;
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:50%;
-  }
-  .outfit-card-img{
-    width:100%;
-    height:150px;
-    object-fit:cover;
-    border-radius:10px;
-    background:#fff;
-    border:1px solid var(--line);
-  }
-
-  /* HERO — el model vestit amb la foto real del producte */
-  .outfit-hero-card{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:1.2rem;
-    background:linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.5));
-    border:1px solid var(--line);
-    border-radius:var(--r-lg);
-    padding:1.2rem;
-    margin-bottom:.8rem;
-  }
-  .outfit-hero-piece{
-    /* min-width:0 és imprescindible en columnes de grid amb text a dins;
-       sense això, el contingut no es pot encongir per sota del seu ample
-       "natural" i el text acaba tallat pel marge de la pantalla. */
-    min-width:0;
-    opacity:0;
-    transform:translateY(10px);
-    animation:outfitCardIn .5s ease forwards;
-  }
-  .outfit-hero-piece:nth-child(2){animation-delay:.1s;}
-  .outfit-hero-media{
-    position:relative;
-    width:100%;
-    aspect-ratio:3/4;
-    border-radius:var(--r-lg);
-    overflow:hidden;
-    background:#fff;
-    border:1px solid var(--line);
-    box-shadow:var(--shadow-lg);
-    margin-bottom:.7rem;
-  }
-  .outfit-hero-img{
-    width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-  }
-  .outfit-hero-fallback{
-    width:100%; height:100%;
-    display:flex; align-items:center; justify-content:center;
-    font-size:3rem;
-    background:var(--paper-2);
-  }
-  .outfit-hero-badge{
-    position:absolute; top:.5rem; left:.5rem; z-index:2;
-    background:var(--navy); color:#fff;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.6rem; text-transform:uppercase; letter-spacing:.05em;
-    padding:.28rem .55rem;
-    border-radius:var(--r-pill);
-  }
-  .outfit-hero-name{
-    font-family:'Space Grotesk',sans-serif;
-    font-weight:700;
-    font-size:1rem;
-    color:var(--ink);
-    margin-bottom:.3rem;
-    overflow-wrap:break-word;
-  }
-  .outfit-hero-desc{
-    font-family:'Inter',sans-serif;
-    font-size:.8rem;
-    color:var(--muted);
-    line-height:1.45;
-    margin-bottom:.6rem;
-    overflow-wrap:break-word;
-  }
   .outfit-photo-note{
     font-family:'Inter',sans-serif;
     font-size:.72rem;
@@ -877,11 +772,23 @@
   }
 
   /* AVATAR GENERAT (SVG) — el "model" tecnològic que vesteix l'outfit real */
+  /* Franja compacta: avatar petit + info del temps en una sola fila (abans anaven apilats) */
+  .outfit-hero-band{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    margin-bottom:1rem;
+    padding-bottom:1rem;
+    border-bottom:1px dashed var(--line);
+  }
   .outfit-avatar-wrap{
+    flex-shrink:0;
     display:flex;
     justify-content:center;
-    padding:1.4rem 1rem 1rem;
-    margin-bottom:.4rem;
+    align-items:flex-end;
+    width:100px;
+    height:100px;
+    padding:.3rem;
     border-radius:var(--r-lg);
     background:radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.9) 0%, rgba(255,255,255,.35) 70%);
     position:relative;
@@ -895,9 +802,9 @@
   }
   .outfit-avatar-svg{
     width:100%;
-    max-width:230px;
+    max-width:90px;
     height:auto;
-    filter:drop-shadow(0 14px 22px rgba(30,58,95,.25));
+    filter:drop-shadow(0 8px 10px rgba(30,58,95,.22));
   }
   .outfit-avatar-svg .avatar-layer{
     opacity:0;
@@ -905,53 +812,117 @@
     animation:avatarLayerIn .45s ease forwards;
   }
   @keyframes avatarLayerIn{ to{opacity:1; transform:translateY(0);} }
-  .outfit-avatar-caption{
-    text-align:center;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.68rem;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    color:var(--muted);
-    margin:.5rem 0 0;
-  }
+  .outfit-header{flex:1; min-width:0;}
+
+  /* Secció plegable "compra el look" — tancada per defecte per no ocupar espai */
+  .outfit-shop-details{margin-bottom:1rem;}
   .outfit-shop-label{
+    display:block;
+    cursor:pointer;
     font-family:'Space Grotesk',sans-serif;
     font-weight:700;
     font-size:.85rem;
     color:var(--ink);
-    margin:0 0 .8rem;
-    padding-top:.8rem;
+    padding:.7rem 0;
     border-top:1px dashed var(--line);
+    list-style:none;
   }
+  .outfit-shop-label::-webkit-details-marker{display:none;}
+  .outfit-shop-label::after{content:'▾'; float:right; color:var(--muted); transition:transform .2s ease;}
+  .outfit-shop-details[open] .outfit-shop-label::after{transform:rotate(180deg);}
 
-  @media (max-width:560px){
-    .outfit-hero-card{grid-template-columns:1fr; gap:1rem;}
+  /* Targetes de foto real, ara compactes (miniatura + text en fila, no una foto gran apilada) */
+  .outfit-hero-compact{
+    display:flex;
+    flex-direction:column;
+    gap:.6rem;
+    margin-bottom:.8rem;
   }
-
-  .outfit-card-name{
+  .outfit-compact-item{
+    display:flex;
+    align-items:center;
+    gap:.8rem;
+    padding:.5rem;
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:var(--paper);
+  }
+  .outfit-compact-thumb{
+    flex-shrink:0;
+    width:52px; height:52px;
+    border-radius:var(--r-sm);
+    object-fit:cover;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+  }
+  .outfit-compact-fallback{
+    flex-shrink:0;
+    width:52px; height:52px;
+    border-radius:var(--r-sm);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+  }
+  .outfit-compact-info{min-width:0; flex:1;}
+  .outfit-compact-badge{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.62rem; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--rail);
+    margin-bottom:.1rem;
+  }
+  .outfit-compact-name{
     font-family:'Space Grotesk',sans-serif;
     font-weight:700;
-    font-size:.95rem;
+    font-size:.86rem;
     color:var(--ink);
+    overflow-wrap:break-word;
   }
-  .outfit-card-desc{
+  .outfit-compact-link{
     font-family:'Inter',sans-serif;
-    font-size:.8rem;
-    color:var(--muted);
-    line-height:1.4;
-    flex-grow:1;
-  }
-  .outfit-card-link{
-    display:inline-flex; align-items:center; gap:.3rem;
-    font-family:'Inter',sans-serif;
-    font-weight:700;
-    font-size:.78rem;
+    font-weight:600;
+    font-size:.74rem;
     color:var(--rail);
     text-decoration:none;
-    margin-top:.2rem;
+    white-space:nowrap;
+    flex-shrink:0;
   }
-  .outfit-card-link:hover{text-decoration:underline;}
-  .outfit-card.rain-flag{border-color:#8fbfe0; background:#f2f8fd;}
+  .outfit-compact-link:hover{text-decoration:underline;}
+  .outfit-photo-note{
+    font-family:'Inter',sans-serif;
+    font-size:.7rem;
+    color:var(--muted);
+    font-style:italic;
+    margin:0 0 .9rem;
+  }
+
+  /* Xips d'accessoris (abans targetes grans amb icona + descripció) */
+  .outfit-cards-compact{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+  }
+  .outfit-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    padding:.4rem .7rem;
+    border:1px solid var(--line);
+    border-radius:var(--r-pill);
+    background:var(--paper);
+    text-decoration:none;
+    font-family:'Inter',sans-serif;
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .outfit-chip:hover{border-color:var(--rail); color:var(--rail);}
+  .outfit-chip.rain-flag{border-color:#8fbfe0; background:#f2f8fd;}
+
+  @media (max-width:420px){
+    .outfit-hero-band{flex-direction:column; align-items:flex-start;}
+  }
 
   .outfit-change-btn{
     margin-top:1.3rem;
@@ -968,7 +939,6 @@
   .outfit-change-btn:hover{border-color:var(--rail); color:var(--rail);}
 
   @media (max-width:640px){
-    .outfit-cards{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));}
     .outfit-panel{padding:1.2rem 1rem;}
     .outfit-header{flex-wrap:wrap;}
     .outfit-header-gender{margin-left:0;}
@@ -1329,11 +1299,15 @@
       </div>
 
       <div id="outfitResult" class="outfit-result" hidden>
-        <div id="outfitHeader" class="outfit-header"></div>
-        <div id="outfitAvatarWrap" class="outfit-avatar-wrap"></div>
-        <p class="outfit-shop-label">🛍️ Compra el look real a UNIQLO</p>
-        <div id="outfitHero"></div>
-        <div id="outfitCards" class="outfit-cards"></div>
+        <div class="outfit-hero-band">
+          <div id="outfitAvatarWrap" class="outfit-avatar-wrap"></div>
+          <div id="outfitHeader" class="outfit-header"></div>
+        </div>
+        <details class="outfit-shop-details">
+          <summary class="outfit-shop-label">🛍️ Compra el look real a UNIQLO</summary>
+          <div id="outfitHero" class="outfit-hero-compact"></div>
+          <div id="outfitCards" class="outfit-cards-compact"></div>
+        </details>
         <button id="outfitChangeGender" class="outfit-change-btn">↺ Canviar de gènere</button>
       </div>
     </div>
@@ -2376,79 +2350,116 @@ function buildAvatarSVG({ gender, band, isRainy, topColor, bottomColor, accentCo
   const shortSleeve = (band === 'warm' || band === 'hot');
   const bottomStyle = band === 'hot' ? 'shorts' : 'pants';
   skin = skin || '#e6b98c';
+  // Petits helpers per fosc/clar automàtics a partir del color base (per als degradats de tela)
+  const shade = (hex, amt) => {
+    const n = parseInt(hex.slice(1), 16);
+    let r = (n >> 16) + amt, g = ((n >> 8) & 0xff) + amt, b = (n & 0xff) + amt;
+    r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
+    return '#' + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
+  };
+  const uid = Math.random().toString(36).slice(2, 8);
+  const topLight = shade(topColor, 26), topDark = shade(topColor, -24);
+  const botLight = shade(bottomColor, 18), botDark = shade(bottomColor, -22);
+  const skinLight = shade(skin, 18), skinDark = shade(skin, -20);
+
+  const defs = `
+    <defs>
+      <linearGradient id="gTop${uid}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${topLight}"/><stop offset="55%" stop-color="${topColor}"/><stop offset="100%" stop-color="${topDark}"/>
+      </linearGradient>
+      <linearGradient id="gBot${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${botLight}"/><stop offset="100%" stop-color="${botDark}"/>
+      </linearGradient>
+      <radialGradient id="gSkin${uid}" cx="38%" cy="32%" r="75%">
+        <stop offset="0%" stop-color="${skinLight}"/><stop offset="100%" stop-color="${skinDark}"/>
+      </radialGradient>
+      <linearGradient id="gHair${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${isDona ? '#5a4230' : '#4a3626'}"/><stop offset="100%" stop-color="${isDona ? '#3a2a1c' : '#2a1e16'}"/>
+      </linearGradient>
+      <radialGradient id="gShadow${uid}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="rgba(20,20,20,.28)"/><stop offset="100%" stop-color="rgba(20,20,20,0)"/>
+      </radialGradient>
+    </defs>
+  `;
+
+  const groundShadow = `<ellipse class="avatar-layer" style="animation-delay:0s" cx="110" cy="352" rx="58" ry="10" fill="url(#gShadow${uid})"/>`;
 
   const hair = isDona
-    ? `<path class="avatar-layer" style="animation-delay:.05s" d="M78,38 Q110,8 142,38 Q150,50 148,70 L148,138 Q140,150 132,140 L132,64 Q110,50 88,64 L88,140 Q80,150 72,138 L72,70 Q70,50 78,38 Z" fill="#4a3626"/>`
-    : `<path class="avatar-layer" style="animation-delay:.05s" d="M77,42 Q110,10 143,42 Q145,56 138,58 Q110,36 82,58 Q75,56 77,42 Z" fill="#3b2a1e"/>`;
+    ? `<path class="avatar-layer" style="animation-delay:.05s" d="M77,37 Q110,6 143,37 Q152,50 149,72 Q147,110 147,140 Q147,152 137,146 Q140,110 134,80 Q134,58 110,50 Q86,58 86,80 Q80,110 83,146 Q73,152 73,140 Q73,110 71,72 Q68,50 77,37 Z" fill="url(#gHair${uid})"/>`
+    : `<path class="avatar-layer" style="animation-delay:.05s" d="M76,41 Q110,8 144,41 Q147,54 141,59 Q126,40 110,38 Q94,40 79,59 Q73,54 76,41 Z" fill="url(#gHair${uid})"/>`;
 
-  const legGap = 10;
-  const legW = 34;
-  const hipY = 214, kneeY = 272, ankleY = 338;
+  const legGap = 9;
+  const hipW = 20, ankleW = 14;
+  const hipY = 214, kneeY = 272, ankleY = 336;
   const bottomBottomY = bottomStyle === 'shorts' ? kneeY : ankleY;
+  const legTaper = (cx, topY, botY, wTop, wBot) => {
+    const x1t = cx - wTop, x2t = cx + wTop, x1b = cx - wBot, x2b = cx + wBot;
+    return `M${x1t},${topY} L${x2t},${topY} Q${x2t+3},${(topY+botY)/2} ${x2b},${botY} L${x1b},${botY} Q${x1t-3},${(topY+botY)/2} ${x1t},${topY} Z`;
+  };
   const legsGarment = `
-    <path class="avatar-layer" style="animation-delay:.15s" d="M${110-legGap/2-legW},${hipY} h${legW} v${bottomBottomY-hipY} h-${legW} Z" fill="${bottomColor}"/>
-    <path class="avatar-layer" style="animation-delay:.15s" d="M${110+legGap/2},${hipY} h${legW} v${bottomBottomY-hipY} h-${legW} Z" fill="${bottomColor}"/>
+    <path class="avatar-layer" style="animation-delay:.15s" d="${legTaper(110-legGap/2-hipW/2, hipY, bottomBottomY, hipW/2, bottomStyle==='shorts'?hipW/2-2:ankleW/2)}" fill="url(#gBot${uid})"/>
+    <path class="avatar-layer" style="animation-delay:.15s" d="${legTaper(110+legGap/2+hipW/2, hipY, bottomBottomY, hipW/2, bottomStyle==='shorts'?hipW/2-2:ankleW/2)}" fill="url(#gBot${uid})"/>
   `;
   const legsSkin = bottomStyle === 'shorts' ? `
-    <rect class="avatar-layer" style="animation-delay:.2s" x="${110-legGap/2-legW+5}" y="${kneeY}" width="${legW-10}" height="${ankleY-kneeY}" rx="6" fill="${skin}"/>
-    <rect class="avatar-layer" style="animation-delay:.2s" x="${110+legGap/2+5}" y="${kneeY}" width="${legW-10}" height="${ankleY-kneeY}" rx="6" fill="${skin}"/>
+    <path class="avatar-layer" style="animation-delay:.2s" d="${legTaper(110-legGap/2-hipW/2, kneeY, ankleY, hipW/2-3, ankleW/2-2)}" fill="url(#gSkin${uid})"/>
+    <path class="avatar-layer" style="animation-delay:.2s" d="${legTaper(110+legGap/2+hipW/2, kneeY, ankleY, hipW/2-3, ankleW/2-2)}" fill="url(#gSkin${uid})"/>
   ` : '';
   const shoes = `
-    <rect class="avatar-layer" style="animation-delay:.3s" x="${110-legGap/2-legW-2}" y="${ankleY-6}" width="${legW+8}" height="16" rx="7" fill="#26282c"/>
-    <rect class="avatar-layer" style="animation-delay:.3s" x="${110+legGap/2-6}" y="${ankleY-6}" width="${legW+8}" height="16" rx="7" fill="#26282c"/>
+    <path class="avatar-layer" style="animation-delay:.3s" d="M${110-legGap/2-hipW/2-11},${ankleY-4} q-2,10 10,11 h16 q4,0 3,-7 l-2,-6 Z" fill="#26282c"/>
+    <path class="avatar-layer" style="animation-delay:.3s" d="M${110+legGap/2+hipW/2-6},${ankleY-4} q-2,10 10,11 h16 q4,0 3,-7 l-2,-6 Z" fill="#26282c"/>
   `;
 
   const shoulderY = 96, waistY = 208;
   const torsoWide = topStyle === 'puffer';
-  const shX = torsoWide ? 46 : 62, shXEnd = torsoWide ? 174 : 158;
-  const waX = torsoWide ? 62 : 72, waXEnd = torsoWide ? 158 : 148;
+  const shX = torsoWide ? 44 : 63, shXEnd = torsoWide ? 176 : 157;
+  const waX = torsoWide ? 64 : 74, waXEnd = torsoWide ? 156 : 146;
   const torso = `
-    <path class="avatar-layer" style="animation-delay:.22s" d="M${shX},${shoulderY} Q110,${shoulderY-10} ${shXEnd},${shoulderY} L${waXEnd},${waistY} Q110,${waistY+6} ${waX},${waistY} Z" fill="${topColor}"/>
+    <path class="avatar-layer" style="animation-delay:.22s" d="M${shX},${shoulderY} Q${shX+18},${shoulderY-16} 110,${shoulderY-14} Q${shXEnd-18},${shoulderY-16} ${shXEnd},${shoulderY} Q${shXEnd+4},${(shoulderY+waistY)/2} ${waXEnd},${waistY} Q110,${waistY+10} ${waX},${waistY} Q${shX-4},${(shoulderY+waistY)/2} ${shX},${shoulderY} Z" fill="url(#gTop${uid})"/>
     ${topStyle === 'puffer' ? `
-      <line class="avatar-layer" style="animation-delay:.24s" x1="${shX+8}" y1="${shoulderY+28}" x2="${shXEnd-8}" y2="${shoulderY+30}" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
-      <line class="avatar-layer" style="animation-delay:.25s" x1="${shX+10}" y1="${shoulderY+56}" x2="${shXEnd-10}" y2="${shoulderY+58}" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
-      <line class="avatar-layer" style="animation-delay:.26s" x1="${shX+12}" y1="${shoulderY+84}" x2="${shXEnd-12}" y2="${shoulderY+86}" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
-    ` : ''}
+      <path class="avatar-layer" style="animation-delay:.24s" d="M${shX+6},${shoulderY+28} Q110,${shoulderY+34} ${shXEnd-6},${shoulderY+28}" stroke="rgba(0,0,0,.14)" stroke-width="2" fill="none"/>
+      <path class="avatar-layer" style="animation-delay:.25s" d="M${shX+8},${shoulderY+56} Q110,${shoulderY+62} ${shXEnd-8},${shoulderY+56}" stroke="rgba(0,0,0,.14)" stroke-width="2" fill="none"/>
+      <path class="avatar-layer" style="animation-delay:.26s" d="M${shX+10},${shoulderY+84} Q110,${shoulderY+90} ${shXEnd-10},${shoulderY+84}" stroke="rgba(0,0,0,.14)" stroke-width="2" fill="none"/>
+    ` : `<path class="avatar-layer" style="animation-delay:.24s" d="M110,${shoulderY-8} L110,${waistY-6}" stroke="rgba(255,255,255,.15)" stroke-width="1.5" fill="none"/>`}
   `;
 
-  const sleeveEndY = shortSleeve ? shoulderY + 42 : shoulderY + 92;
-  const handY = shoulderY + 92;
+  const sleeveEndY = shortSleeve ? shoulderY + 40 : shoulderY + 94;
+  const handY = shoulderY + 94;
   const arms = `
-    <path class="avatar-layer" style="animation-delay:.28s" d="M${shX+2},${shoulderY+6} Q${shX-14},${shoulderY+40} ${shX-8},${sleeveEndY} L${shX+10},${sleeveEndY} Q${shX+4},${shoulderY+40} ${shX+16},${shoulderY+6} Z" fill="${topColor}"/>
-    <path class="avatar-layer" style="animation-delay:.28s" d="M${shXEnd-2},${shoulderY+6} Q${shXEnd+14},${shoulderY+40} ${shXEnd+8},${sleeveEndY} L${shXEnd-10},${sleeveEndY} Q${shXEnd-4},${shoulderY+40} ${shXEnd-16},${shoulderY+6} Z" fill="${topColor}"/>
+    <path class="avatar-layer" style="animation-delay:.28s" d="${legTaper(shX-2, shoulderY+4, sleeveEndY, 12, shortSleeve?11:8)}" fill="url(#gTop${uid})"/>
+    <path class="avatar-layer" style="animation-delay:.28s" d="${legTaper(shXEnd+2, shoulderY+4, sleeveEndY, 12, shortSleeve?11:8)}" fill="url(#gTop${uid})"/>
     ${shortSleeve ? `
-      <rect class="avatar-layer" style="animation-delay:.3s" x="${shX-9}" y="${sleeveEndY-2}" width="16" height="${handY-sleeveEndY+14}" rx="7" fill="${skin}"/>
-      <rect class="avatar-layer" style="animation-delay:.3s" x="${shXEnd-7}" y="${sleeveEndY-2}" width="16" height="${handY-sleeveEndY+14}" rx="7" fill="${skin}"/>
-    ` : `
-      <circle class="avatar-layer" style="animation-delay:.3s" cx="${shX-1}" cy="${handY+10}" r="9" fill="${skin}"/>
-      <circle class="avatar-layer" style="animation-delay:.3s" cx="${shXEnd+1}" cy="${handY+10}" r="9" fill="${skin}"/>
-    `}
+      <path class="avatar-layer" style="animation-delay:.3s" d="${legTaper(shX-2, sleeveEndY-2, handY+8, 10, 7)}" fill="url(#gSkin${uid})"/>
+      <path class="avatar-layer" style="animation-delay:.3s" d="${legTaper(shXEnd+2, sleeveEndY-2, handY+8, 10, 7)}" fill="url(#gSkin${uid})"/>
+    ` : ''}
+    <circle class="avatar-layer" style="animation-delay:.31s" cx="${shX-2}" cy="${handY+10}" r="8" fill="url(#gSkin${uid})"/>
+    <circle class="avatar-layer" style="animation-delay:.31s" cx="${shXEnd+2}" cy="${handY+10}" r="8" fill="url(#gSkin${uid})"/>
   `;
 
   const neckHead = `
-    <rect class="avatar-layer" style="animation-delay:.1s" x="100" y="76" width="20" height="18" fill="${skin}"/>
-    <circle class="avatar-layer" style="animation-delay:.02s" cx="110" cy="50" r="30" fill="${skin}"/>
+    <path class="avatar-layer" style="animation-delay:.1s" d="M100,78 Q110,84 120,78 L120,96 Q110,101 100,96 Z" fill="url(#gSkin${uid})"/>
+    <circle class="avatar-layer" style="animation-delay:.02s" cx="110" cy="50" r="29" fill="url(#gSkin${uid})"/>
+    <ellipse class="avatar-layer" style="animation-delay:.03s" cx="122" cy="44" rx="10" ry="14" fill="rgba(255,255,255,.16)"/>
   `;
 
   let accessories = '';
   if (band === 'cold') {
-    accessories += `<path class="avatar-layer" style="animation-delay:.34s" d="M84,88 Q110,102 136,88 L138,100 Q110,116 82,100 Z" fill="${accentColor}"/>`;
+    accessories += `<path class="avatar-layer" style="animation-delay:.34s" d="M83,88 Q110,104 137,88 L139,101 Q110,118 81,101 Z" fill="${accentColor}"/>`;
   }
   if (band === 'hot' && !isRainy) {
-    accessories += `<path class="avatar-layer" style="animation-delay:.34s" d="M76,34 Q110,14 144,34 Q146,28 138,24 Q110,10 82,24 Q74,28 76,34 Z" fill="${accentColor}"/>`;
+    accessories += `<path class="avatar-layer" style="animation-delay:.34s" d="M75,35 Q110,12 145,35 Q147,27 138,23 Q110,8 82,23 Q73,27 75,35 Z" fill="${accentColor}"/>`;
   }
   if (isRainy) {
     accessories += `
       <g class="avatar-layer" style="animation-delay:.36s">
-        <path d="M170,20 Q190,-4 210,20 Q195,12 170,20 Z" fill="${accentColor}"/>
-        <line x1="190" y1="18" x2="190" y2="60" stroke="${accentColor}" stroke-width="3" stroke-linecap="round"/>
-        <path d="M188,58 Q188,66 196,64" stroke="${accentColor}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M168,18 Q190,-8 212,18 Q196,9 168,18 Z" fill="${accentColor}"/>
+        <line x1="190" y1="16" x2="190" y2="60" stroke="${accentColor}" stroke-width="3" stroke-linecap="round"/>
+        <path d="M188,58 Q188,67 197,65" stroke="${accentColor}" stroke-width="3" fill="none" stroke-linecap="round"/>
       </g>
     `;
   }
 
-  return `<svg class="outfit-avatar-svg" viewBox="0 0 220 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Il·lustració de l'outfit recomanat">
-    ${legsGarment}${legsSkin}${shoes}${arms}${torso}${neckHead}${hair}${accessories}
+  return `<svg class="outfit-avatar-svg" viewBox="0 0 220 365" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Il·lustració de l'outfit recomanat">
+    ${defs}${groundShadow}${legsGarment}${legsSkin}${shoes}${arms}${torso}${neckHead}${hair}${accessories}
   </svg>`;
 }
 
@@ -2494,49 +2505,33 @@ function renderOutfit(gender){
     gender, band: band.key, isRainy: isRainyNow,
     topColor: pal.top, bottomColor: pal.bottom, accentColor: pal.accent,
   });
-  document.getElementById('outfitAvatarWrap').innerHTML = `
-    <div>
-      ${avatarSvg}
-      <p class="outfit-avatar-caption">Il·lustració generada · ${band.label}${isRainyNow ? ' · amb pluja' : ''}</p>
-    </div>
-  `;
+  document.getElementById('outfitAvatarWrap').innerHTML = avatarSvg;
 
-  // Ho tornem a separar en DUES targetes independents (no apilades): les fotos
-  // reals d'UNIQLO per a la part de dalt solen ser fotos de model de cos
-  // sencer que JA inclouen uns pantalons seus — apilar-hi la nostra part de
-  // baix per sobre feia semblar que hi havia 3 peces en comptes de 2. Cada
-  // targeta mostra amb honestedat la seva pròpia foto tal com és.
-  const heroPieceHtml = (piece, label) => `
-    <div class="outfit-hero-piece">
-      <div class="outfit-hero-media">
-        ${piece.img ? `<img src="${piece.img}" alt="${piece.name}" class="outfit-hero-img"
-             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'outfit-hero-fallback',textContent:'${piece.icon}'}))">`
-          : `<div class="outfit-hero-fallback">${piece.icon}</div>`}
-        <span class="outfit-hero-badge">${label}</span>
+  // Fotos reals d'UNIQLO com a llista compacta (miniatura + text en fila),
+  // dins d'un <details> tancat per defecte perquè no ocupi espai si no interessa.
+  const compactItemHtml = (piece, label) => `
+    <div class="outfit-compact-item">
+      ${piece.img
+        ? `<img src="${piece.img}" alt="${piece.name}" class="outfit-compact-thumb"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'outfit-compact-fallback',textContent:'${piece.icon}'}))">`
+        : `<div class="outfit-compact-fallback">${piece.icon}</div>`}
+      <div class="outfit-compact-info">
+        <span class="outfit-compact-badge">${label}</span>
+        <div class="outfit-compact-name">${piece.name}</div>
       </div>
-      <div class="outfit-hero-name">${piece.name}</div>
-      <div class="outfit-hero-desc">${piece.desc}</div>
-      <a class="outfit-card-link" href="${uniqloSearchUrl(piece.q)}" target="_blank" rel="noopener">Veure a UNIQLO ↗</a>
+      <a class="outfit-compact-link" href="${uniqloSearchUrl(piece.q)}" target="_blank" rel="noopener">Veure ↗</a>
     </div>
   `;
   document.getElementById('outfitHero').innerHTML = `
-    <div class="outfit-hero-card">
-      ${heroPieceHtml(top, "Part de dalt")}
-      ${heroPieceHtml(bottom, "Part de baix")}
-    </div>
+    ${compactItemHtml(top, "Part de dalt")}
+    ${compactItemHtml(bottom, "Part de baix")}
     <p class="outfit-photo-note">Les fotos són tal com les publica UNIQLO — la de la part de dalt pot incloure altres peces del model que no formen part d'aquesta recomanació.</p>
   `;
 
-  document.getElementById('outfitCards').innerHTML = accessories.map((it, i) => `
-    <div class="outfit-card${it.rain ? ' rain-flag' : ''}" style="animation-delay:${(i+1) * 0.08}s">
-      ${it.img
-        ? `<img src="${it.img}" alt="${it.name}" class="outfit-card-img"
-             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'outfit-card-icon',textContent:'${it.icon}'}))">`
-        : `<div class="outfit-card-icon">${it.icon}</div>`}
-      <div class="outfit-card-name">${it.name}</div>
-      <div class="outfit-card-desc">${it.desc}</div>
-      <a class="outfit-card-link" href="${uniqloSearchUrl(it.q)}" target="_blank" rel="noopener">Veure a UNIQLO ↗</a>
-    </div>
+  document.getElementById('outfitCards').innerHTML = accessories.map(it => `
+    <a class="outfit-chip${it.rain ? ' rain-flag' : ''}" href="${uniqloSearchUrl(it.q)}" target="_blank" rel="noopener" title="${it.desc}">
+      <span>${it.icon}</span> ${it.name}
+    </a>
   `).join('');
 }
 
