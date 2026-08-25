@@ -734,6 +734,59 @@
   .outfit-gender-btn:active{transform:scale(0.97);}
   .outfit-gender-icon{font-size:1.9rem;}
 
+  /* Pas 2: estil d'empresa + botiga */
+  .outfit-prompt-sub{
+    font-weight:400;
+    font-size:.78rem;
+    color:var(--muted);
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .outfit-style-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.6rem;
+    margin-bottom:1.2rem;
+  }
+  .outfit-style-btn, .outfit-store-btn{
+    flex:1;
+    min-width:100px;
+    padding:.7rem .6rem;
+    min-height:44px;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    border-radius:var(--r-md);
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:.82rem;
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease, border-color .15s ease, background .15s ease;
+  }
+  .outfit-style-btn:hover, .outfit-store-btn:hover{border-color:var(--rail);}
+  .outfit-style-btn:active, .outfit-store-btn:active{transform:scale(0.97);}
+  .outfit-style-btn.selected, .outfit-store-btn.selected{
+    border-color:var(--rail);
+    background:var(--rail);
+    color:#fff;
+  }
+  .outfit-confirm-btn{
+    width:100%;
+    padding:.8rem;
+    min-height:48px;
+    border:none;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--r-pill);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.92rem;
+    cursor:pointer;
+    transition:opacity .15s ease, transform .12s ease;
+  }
+  .outfit-confirm-btn:disabled{opacity:.4; cursor:not-allowed;}
+  .outfit-confirm-btn:not(:disabled):active{transform:scale(0.98);}
+
   .outfit-header{
     display:flex; align-items:center; gap:1rem;
   }
@@ -787,7 +840,7 @@
     justify-content:center;
     align-items:flex-end;
     width:100px;
-    height:100px;
+    height:172px;
     padding:.3rem;
     border-radius:var(--r-lg);
     background:radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.9) 0%, rgba(255,255,255,.35) 70%);
@@ -1296,6 +1349,22 @@
             <span class="outfit-gender-icon">👗</span> Dona
           </button>
         </div>
+      </div>
+
+      <div id="outfitStylePicker" class="outfit-style-picker" hidden>
+        <p class="outfit-prompt">Quin estil d'empresa? <span class="outfit-prompt-sub">(defineix el to del look)</span></p>
+        <div class="outfit-style-buttons" id="outfitStyleButtons">
+          <button class="outfit-style-btn" data-style="formal">🏢 Corporativa</button>
+          <button class="outfit-style-btn" data-style="casual">💻 Casual / tech</button>
+          <button class="outfit-style-btn" data-style="creative">🎨 Creativa</button>
+        </div>
+        <p class="outfit-prompt">On vols comprar el look?</p>
+        <div class="outfit-style-buttons" id="outfitStoreButtons">
+          <button class="outfit-store-btn" data-store="uniqlo">UNIQLO</button>
+          <button class="outfit-store-btn" data-store="zara">ZARA</button>
+          <button class="outfit-store-btn" data-store="hm">H&amp;M</button>
+        </div>
+        <button id="outfitStyleConfirm" class="outfit-confirm-btn" disabled>Genera l'outfit ✨</button>
       </div>
 
       <div id="outfitResult" class="outfit-result" hidden>
@@ -2254,11 +2323,20 @@ async function renderReturnTrafficPrediction(recStop, officeDeparture, transferM
   }
 }
 
-/* ===== OUTFIT UNIQLO (basat en la temperatura real a l'oficina) ===== */
+/* ===== OUTFIT (basat en la temperatura real a l'oficina, botiga i estil triats) ===== */
 
-function uniqloSearchUrl(query){
-  return 'https://www.uniqlo.com/es/es/search?q=' + encodeURIComponent(query);
+// URLs de cerca reals verificades per a cada botiga (mai inventades).
+const STORE_SEARCH_BASE = {
+  uniqlo: (q) => 'https://www.uniqlo.com/es/es/search?q=' + encodeURIComponent(q),
+  zara:   (q) => 'https://www.zara.com/es/es/search?searchTerm=' + encodeURIComponent(q),
+  hm:     (q) => 'https://www2.hm.com/es_es/search-results.html?q=' + encodeURIComponent(q),
+};
+function storeSearchUrl(query, store){
+  const fn = STORE_SEARCH_BASE[store] || STORE_SEARCH_BASE.uniqlo;
+  return fn(query);
 }
+// Compatibilitat amb crides existents que encara usen el nom antic
+function uniqloSearchUrl(query){ return storeSearchUrl(query, 'uniqlo'); }
 
 // Bandes de temperatura -> descripció i classe visual del panell
 function outfitTempBand(tempC){
@@ -2273,15 +2351,26 @@ const RAIN_TYPES = ['LIGHT_RAIN_SHOWERS','RAIN_SHOWERS','LIGHT_RAIN','RAIN','HEA
 
 // Retorna la llista de peces recomanades (icona, nom, descripció, cerca a UNIQLO)
 // per a una temperatura, gènere ('home'/'dona') i condició de pluja donades.
-function getOutfitItems(tempC, gender, precipPercent, weatherType){
+function getOutfitItems(tempC, gender, precipPercent, weatherType, store, companyType){
   const g = gender === 'dona' ? 'mujer' : 'hombre';
   const isDona = gender === 'dona';
   const band = outfitTempBand(tempC).key;
   const isRainy = (precipPercent != null && precipPercent >= 40) || RAIN_TYPES.includes(weatherType);
+  store = store || 'uniqlo';
+  companyType = companyType || 'casual';
 
-  // Fotos reals de producte (extretes de les fitxes oficials uniqlo.com/es, verificades
-  // per gènere quan n'hi ha disponible), amb reserva automàtica a la icona si no carrega.
-  const IMG = {
+  // Modificador d'estil segons el tipus d'empresa: ajusta la paraula de cerca i
+  // el nom de la peça (no canvia les fotos, que segueixen sent d'UNIQLO real).
+  const STYLE = {
+    formal:   { word: 'formal', shirtName: 'Camisa', pantName: 'Pantalón de vestir' },
+    casual:   { word: 'casual', shirtName: 'Camiseta', pantName: 'Pantalón' },
+    creative: { word: 'color estampado', shirtName: 'Camiseta con print', pantName: 'Pantalón color' },
+  }[companyType] || { word: 'casual', shirtName: 'Camiseta', pantName: 'Pantalón' };
+
+  // Fotos reals de producte — NOMÉS verificades per a UNIQLO (extretes de les
+  // fitxes oficials uniqlo.com/es). Per a Zara i H&M encara no tenim cap URL
+  // d'imatge comprovada, així que la targeta cau honestament a la icona.
+  const IMG = store !== 'uniqlo' ? {} : {
     ultraLightDown: isDona
       ? 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450310/item/goods_32_450310_3x4.jpg?width=600'
       : 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470067/item/goods_19_470067_3x4.jpg?width=600',
@@ -2302,19 +2391,19 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType){
   // TOP: la peça principal de la part superior del cos
   let top;
   if(band === 'cold'){
-    top = {icon:'🧥', name:'Ultra Light Down', desc:'Abric acolchat, càlid i sorprenentment lleuger — la capa exterior del dia.', q:`ultra light down ${g}`, img:IMG.ultraLightDown};
+    top = {icon:'🧥', name:'Ultra Light Down', desc:'Abric acolchat, càlid i sorprenentment lleuger — la capa exterior del dia.', q:`ultra light down ${companyType==='formal'?'abrigo elegante':''} ${g}`, img:IMG.ultraLightDown};
   } else if(band === 'cool'){
     top = {icon:'🌡️', name:'HEATTECH Ultracàlid', desc:'Capa interior tèrmica, 2,25 vegades més càlida que el HEATTECH normal.', q:`HEATTECH ultra calido ${g}`, img:IMG.heattechUltraWarm};
   } else {
-    top = {icon:'👕', name:'Camiseta AIRism', desc: band === 'mild' ? 'Base transpirable per a un dia fresc-templat.' : 'Teixit fresc al tacte, ideal per a calor moderada o intensa.', q:`camiseta AIRism ${g}`, img:IMG.airism};
+    top = {icon:'👕', name: STYLE.shirtName + (band==='mild'?' manga larga':''), desc: (companyType==='formal' ? 'Versió arreglada, adequada per a un entorn corporatiu. ' : '') + (band === 'mild' ? 'Base transpirable per a un dia fresc-templat.' : 'Teixit fresc al tacte, ideal per a calor moderada o intensa.'), q:`${STYLE.shirtName.toLowerCase()} ${STYLE.word} ${g}`, img: companyType==='casual' ? IMG.airism : undefined};
   }
 
   // BOTTOM: la peça de la part inferior
   let bottom;
-  if(band === 'hot'){
+  if(band === 'hot' && companyType !== 'formal'){
     bottom = {icon:'🩳', name: isDona ? 'Pantalón corto / legging AIRism' : 'Pantalón corto', desc:'Teixit transpirable per no passar calor.', q:`pantalon corto ligero ${g}`, img:IMG.shorts};
   } else {
-    bottom = {icon:'👖', name: band === 'cold' || band === 'cool' ? 'Pantalón chino' : 'Pantalón lleuger', desc:'Combina bé amb qualsevol part de dalt i aguanta tot el dia.', q:`pantalon chino ${g}`, img:IMG.chino};
+    bottom = {icon:'👖', name: STYLE.pantName, desc:'Combina bé amb qualsevol part de dalt i aguanta tot el dia.', q:`${STYLE.pantName.toLowerCase()} ${STYLE.word} ${g}`, img: companyType==='casual' ? IMG.chino : undefined};
   }
 
   // ACCESSORIS: complements sense foto verificada (icona)
@@ -2324,11 +2413,11 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType){
     accessories.push({icon:'🧤', name:'Bufanda i guants', desc:'Accessoris tèrmics per rematar el look.', q:`bufanda guantes accesorios ${g}`});
   } else if(band === 'cool'){
     accessories.push({icon:'🧶', name:'Sudadera o jersei fi', desc:'Capa intermèdia còmoda per al dia a dia.', q:`sudadera jersey ${g}`});
-    accessories.push({icon:'🧥', name:'Chaqueta acolchada', desc:'Ultra Light Down o similar per a l\'exterior.', q:`chaqueta acolchada ligera ${g}`, img:IMG.ultraLightDown});
+    accessories.push({icon:'🧥', name:'Chaqueta acolchada', desc:'Ultra Light Down o similar per a l\'exterior.', q:`chaqueta acolchada ligera ${g}`, img: companyType==='casual' ? IMG.ultraLightDown : undefined});
   } else if(band === 'mild'){
-    accessories.push({icon:'🧥', name:'Chaqueta BLOCKTECH', desc:'Lleugera i tallavent, ideal per anar i tornar de l\'oficina.', q:`chaqueta ligera blocktech ${g}`});
+    accessories.push({icon:'🧥', name: companyType==='formal' ? 'Americana / blazer' : 'Chaqueta BLOCKTECH', desc:'Lleugera i tallavent, ideal per anar i tornar de l\'oficina.', q:`${companyType==='formal'?'americana blazer':'chaqueta ligera blocktech'} ${g}`});
   } else if(band === 'warm'){
-    accessories.push({icon:'👔', name:'Camisa lleugera o polo', desc:'Look net i fresc per a l\'oficina.', q:`camisa ligera polo ${g}`});
+    if(companyType !== 'formal') accessories.push({icon:'👔', name:'Camisa lleugera o polo', desc:'Look net i fresc per a l\'oficina.', q:`camisa ligera polo ${g}`});
   } else {
     accessories.push({icon:'🧢', name:'Gorra', desc:'Protecció extra si camines una estona al sol.', q:`gorra accesorios`});
   }
@@ -2473,16 +2562,17 @@ const AVATAR_PALETTE = {
   hot:  { top: '#5fc7a3', bottom: '#6b7280', accent: '#1e3a5f' },
 };
 
-function renderOutfit(gender){
+function renderOutfit(gender, companyType, store){
   if(!lastOfficeWeather) return;
   const tempC = lastOfficeWeather.temp != null ? lastOfficeWeather.temp : 18;
   const band = outfitTempBand(tempC);
-  const { top, bottom, accessories } = getOutfitItems(tempC, gender, lastOfficeWeather.precipPercent, lastOfficeWeather.type);
+  const { top, bottom, accessories } = getOutfitItems(tempC, gender, lastOfficeWeather.precipPercent, lastOfficeWeather.type, store, companyType);
+  const storeLabel = { uniqlo:'UNIQLO', zara:'ZARA', hm:'H&M' }[store] || 'UNIQLO';
 
   const panel = document.getElementById('outfitPanel');
   panel.className = 'outfit-panel ' + band.cssClass;
 
-  document.getElementById('outfitGenderPicker').hidden = true;
+  document.getElementById('outfitStylePicker').hidden = true;
   const result = document.getElementById('outfitResult');
   result.hidden = false;
 
@@ -2493,7 +2583,7 @@ function renderOutfit(gender){
       <div class="outfit-header-temp">${tempC}°C a l'oficina · ${band.label}</div>
       <div class="outfit-header-desc">${lastOfficeWeather.desc || ''}</div>
     </div>
-    <span class="outfit-header-gender">${gender === 'dona' ? '👗 Dona' : '👔 Home'}</span>
+    <span class="outfit-header-gender">${gender === 'dona' ? '👗' : '👔'} · ${storeLabel}</span>
   `;
 
   // Avatar generat per codi (SVG): sempre disponible, sempre coherent amb la
@@ -2507,8 +2597,9 @@ function renderOutfit(gender){
   });
   document.getElementById('outfitAvatarWrap').innerHTML = avatarSvg;
 
-  // Fotos reals d'UNIQLO com a llista compacta (miniatura + text en fila),
-  // dins d'un <details> tancat per defecte perquè no ocupi espai si no interessa.
+  // Fotos reals com a llista compacta (miniatura + text en fila), dins d'un
+  // <details> tancat per defecte. Només UNIQLO té fotos verificades — per a
+  // Zara/H&M la targeta cau honestament a la icona en lloc d'imatge.
   const compactItemHtml = (piece, label) => `
     <div class="outfit-compact-item">
       ${piece.img
@@ -2519,21 +2610,25 @@ function renderOutfit(gender){
         <span class="outfit-compact-badge">${label}</span>
         <div class="outfit-compact-name">${piece.name}</div>
       </div>
-      <a class="outfit-compact-link" href="${uniqloSearchUrl(piece.q)}" target="_blank" rel="noopener">Veure ↗</a>
+      <a class="outfit-compact-link" href="${storeSearchUrl(piece.q, store)}" target="_blank" rel="noopener">Veure ↗</a>
     </div>
   `;
   document.getElementById('outfitHero').innerHTML = `
     ${compactItemHtml(top, "Part de dalt")}
     ${compactItemHtml(bottom, "Part de baix")}
-    <p class="outfit-photo-note">Les fotos són tal com les publica UNIQLO — la de la part de dalt pot incloure altres peces del model que no formen part d'aquesta recomanació.</p>
+    <p class="outfit-photo-note">${store === 'uniqlo'
+      ? 'Les fotos són tal com les publica UNIQLO — la de la part de dalt pot incloure altres peces del model que no formen part d\'aquesta recomanació.'
+      : `Encara no tenim fotos verificades de producte per a ${storeLabel} — els enllaços porten a la cerca real a la seva web.`}</p>
   `;
 
   document.getElementById('outfitCards').innerHTML = accessories.map(it => `
-    <a class="outfit-chip${it.rain ? ' rain-flag' : ''}" href="${uniqloSearchUrl(it.q)}" target="_blank" rel="noopener" title="${it.desc}">
+    <a class="outfit-chip${it.rain ? ' rain-flag' : ''}" href="${storeSearchUrl(it.q, store)}" target="_blank" rel="noopener" title="${it.desc}">
       <span>${it.icon}</span> ${it.name}
     </a>
   `).join('');
 }
+
+let _pendingGender = null;
 
 function unlockOutfitPicker(){
   const gateNote = document.getElementById('outfitGateNote');
@@ -2549,8 +2644,40 @@ function unlockOutfitPicker(){
   }
 }
 
-document.getElementById('outfitGenderMen').addEventListener('click', () => renderOutfit('home'));
-document.getElementById('outfitGenderWomen').addEventListener('click', () => renderOutfit('dona'));
+function goToStyleStep(gender){
+  _pendingGender = gender;
+  document.getElementById('outfitGenderPicker').hidden = true;
+  document.getElementById('outfitStylePicker').hidden = false;
+  document.querySelectorAll('.outfit-style-btn, .outfit-store-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('outfitStyleConfirm').disabled = true;
+}
+
+let _selectedStyle = null, _selectedStore = null;
+function checkStyleStoreReady(){
+  document.getElementById('outfitStyleConfirm').disabled = !(_selectedStyle && _selectedStore);
+}
+document.querySelectorAll('#outfitStyleButtons .outfit-style-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#outfitStyleButtons .outfit-style-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    _selectedStyle = btn.dataset.style;
+    checkStyleStoreReady();
+  });
+});
+document.querySelectorAll('#outfitStoreButtons .outfit-store-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#outfitStoreButtons .outfit-store-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    _selectedStore = btn.dataset.store;
+    checkStyleStoreReady();
+  });
+});
+document.getElementById('outfitStyleConfirm').addEventListener('click', () => {
+  renderOutfit(_pendingGender, _selectedStyle, _selectedStore);
+});
+
+document.getElementById('outfitGenderMen').addEventListener('click', () => goToStyleStep('home'));
+document.getElementById('outfitGenderWomen').addEventListener('click', () => goToStyleStep('dona'));
 document.getElementById('outfitChangeGender').addEventListener('click', () => {
   document.getElementById('outfitResult').hidden = true;
   document.getElementById('outfitGenderPicker').hidden = false;
