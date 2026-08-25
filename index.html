@@ -787,49 +787,70 @@
   /* HERO — el model vestit amb la foto real del producte */
   .outfit-hero-card{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:1.2rem;
+    grid-template-columns:220px 1fr;
+    gap:1.4rem;
+    align-items:start;
     background:linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.5));
     border:1px solid var(--line);
     border-radius:18px;
     padding:1.2rem;
     margin-bottom:1.3rem;
-  }
-  .outfit-hero-piece{
     opacity:0;
     transform:translateY(10px);
     animation:outfitCardIn .5s ease forwards;
   }
-  .outfit-hero-piece:nth-child(2){animation-delay:.1s;}
-  .outfit-hero-media{
+  /* Silueta contínua: dues fotos reals apilades sense separació, com un sol model de cap a peus */
+  .outfit-look-stack{
     position:relative;
-    width:100%;
-    aspect-ratio:3/4;
+    display:flex;
+    flex-direction:column;
     border-radius:14px;
     overflow:hidden;
-    background:#fff;
     border:1px solid var(--line);
     box-shadow:0 12px 28px -12px rgba(30,58,95,.35);
-    margin-bottom:.7rem;
+    background:#fff;
   }
-  .outfit-hero-img{
+  .outfit-look-half{
+    width:100%;
+    aspect-ratio:3/4;
+    overflow:hidden;
+    background:var(--paper-2);
+  }
+  .outfit-look-top{border-bottom:1px solid rgba(0,0,0,.06);}
+  .outfit-look-img{
     width:100%; height:100%;
     object-fit:cover;
     display:block;
   }
-  .outfit-hero-fallback{
+  .outfit-look-fallback{
     width:100%; height:100%;
     display:flex; align-items:center; justify-content:center;
-    font-size:3.5rem;
+    font-size:3rem;
     background:var(--paper-2);
   }
   .outfit-hero-badge{
-    position:absolute; top:.5rem; left:.5rem;
+    position:absolute; top:.5rem; left:.5rem; z-index:2;
     background:var(--navy); color:#fff;
     font-family:'IBM Plex Mono',monospace;
     font-size:.6rem; text-transform:uppercase; letter-spacing:.05em;
     padding:.28rem .55rem;
     border-radius:100px;
+  }
+  .outfit-hero-info{
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+  }
+  .outfit-hero-info-block{}
+  .outfit-hero-badge-inline{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.62rem; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--rail);
+    background:var(--paper-2);
+    padding:.2rem .5rem;
+    border-radius:100px;
+    margin-bottom:.35rem;
   }
   .outfit-hero-name{
     font-family:'Space Grotesk',sans-serif;
@@ -890,10 +911,10 @@
     .outfit-panel{padding:1.2rem 1rem;}
     .outfit-header{flex-wrap:wrap;}
     .outfit-header-gender{margin-left:0;}
-    .outfit-hero-card{gap:.7rem; padding:.9rem;}
-  }
-  @media (max-width:420px){
-    .outfit-hero-card{grid-template-columns:1fr;}
+    .outfit-hero-card{grid-template-columns:1fr; gap:1rem; padding:.9rem;}
+    .outfit-look-stack{max-width:260px; margin:0 auto;}
+    .outfit-hero-info{flex-direction:row; gap:.8rem;}
+    .outfit-hero-info-block{flex:1;}
   }
 
   /* MAP SECTION */
@@ -2241,7 +2262,7 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType){
       ? 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450606/item/goods_05_450606_3x4.jpg?width=600'
       : 'https://image.uniqlo.com/UQ/ST3/eu/imagesgoods/482880/item/eugoods_57_482880_3x4.jpg?width=600',
     shorts: isDona
-      ? null // sense foto verificada per a dona encara — cau a icona
+      ? 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/479150/item/goods_36_479150_3x4.jpg?width=600'
       : 'https://image.uniqlo.com/UQ/ST3/eu/imagesgoods/475827/item/eugoods_01_475827_3x4.jpg?width=600',
   };
 
@@ -2258,7 +2279,7 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType){
   // BOTTOM: la peça de la part inferior
   let bottom;
   if(band === 'hot'){
-    bottom = {icon:'🩳', name:'Pantalón corto', desc:'Teixit transpirable per no passar calor.', q:`pantalon corto ligero ${g}`, img:IMG.shorts};
+    bottom = {icon:'🩳', name: isDona ? 'Pantalón corto / legging AIRism' : 'Pantalón corto', desc:'Teixit transpirable per no passar calor.', q:`pantalon corto ligero ${g}`, img:IMG.shorts};
   } else {
     bottom = {icon:'👖', name: band === 'cold' || band === 'cool' ? 'Pantalón chino' : 'Pantalón lleuger', desc:'Combina bé amb qualsevol part de dalt i aguanta tot el dia.', q:`pantalon chino ${g}`, img:IMG.chino};
   }
@@ -2309,26 +2330,35 @@ function renderOutfit(gender){
     <span class="outfit-header-gender">${gender === 'dona' ? '👗 Dona' : '👔 Home'}</span>
   `;
 
-  // "Vestim el model": es mostren SEMPRE les dues peces principals (top + bottom)
-  // amb la foto real del producte d'UNIQLO, com un outfit complet de dalt a baix.
-  // Si alguna imatge no carrega, cau a la icona automàticament (onerror).
-  const heroPieceHtml = (piece, label) => `
-    <div class="outfit-hero-piece">
-      <div class="outfit-hero-media">
-        ${piece.img ? `<img src="${piece.img}" alt="${piece.name}" class="outfit-hero-img"
-             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'outfit-hero-fallback',textContent:'${piece.icon}'}))">`
-          : `<div class="outfit-hero-fallback">${piece.icon}</div>`}
-        <span class="outfit-hero-badge">${label}</span>
-      </div>
+  // "Vestim el model": top i bottom s'apilen SENSE separació dins d'una mateixa
+  // columna, formant una silueta contínua de cap a peus (com si fos un sol
+  // model), tot i que són dues fotos reals independents d'UNIQLO. No inventem
+  // cap imatge combinada — només les composem visualment una sobre l'altra.
+  const heroImgHtml = (piece) => piece.img
+    ? `<img src="${piece.img}" alt="${piece.name}" class="outfit-look-img"
+         onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'outfit-look-fallback',textContent:'${piece.icon}'}))">`
+    : `<div class="outfit-look-fallback">${piece.icon}</div>`;
+
+  const heroInfoHtml = (piece, label) => `
+    <div class="outfit-hero-info-block">
+      <span class="outfit-hero-badge-inline">${label}</span>
       <div class="outfit-hero-name">${piece.name}</div>
       <div class="outfit-hero-desc">${piece.desc}</div>
       <a class="outfit-card-link" href="${uniqloSearchUrl(piece.q)}" target="_blank" rel="noopener">Veure a UNIQLO ↗</a>
     </div>
   `;
+
   document.getElementById('outfitHero').innerHTML = `
     <div class="outfit-hero-card">
-      ${heroPieceHtml(top, "PART DE DALT")}
-      ${heroPieceHtml(bottom, "PART DE BAIX")}
+      <div class="outfit-look-stack">
+        <span class="outfit-hero-badge">Look d'avui</span>
+        <div class="outfit-look-half outfit-look-top">${heroImgHtml(top)}</div>
+        <div class="outfit-look-half outfit-look-bottom">${heroImgHtml(bottom)}</div>
+      </div>
+      <div class="outfit-hero-info">
+        ${heroInfoHtml(top, 'Part de dalt')}
+        ${heroInfoHtml(bottom, 'Part de baix')}
+      </div>
     </div>
   `;
 
