@@ -876,6 +876,54 @@
     margin:0 0 1.3rem;
   }
 
+  /* AVATAR GENERAT (SVG) — el "model" tecnològic que vesteix l'outfit real */
+  .outfit-avatar-wrap{
+    display:flex;
+    justify-content:center;
+    padding:1.4rem 1rem 1rem;
+    margin-bottom:.4rem;
+    border-radius:var(--r-lg);
+    background:radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.9) 0%, rgba(255,255,255,.35) 70%);
+    position:relative;
+    overflow:hidden;
+  }
+  .outfit-avatar-wrap::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(180deg, rgba(30,58,95,0.04) 0 1px, transparent 1px 28px);
+    pointer-events:none;
+  }
+  .outfit-avatar-svg{
+    width:100%;
+    max-width:230px;
+    height:auto;
+    filter:drop-shadow(0 14px 22px rgba(30,58,95,.25));
+  }
+  .outfit-avatar-svg .avatar-layer{
+    opacity:0;
+    transform:translateY(6px);
+    animation:avatarLayerIn .45s ease forwards;
+  }
+  @keyframes avatarLayerIn{ to{opacity:1; transform:translateY(0);} }
+  .outfit-avatar-caption{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+    margin:.5rem 0 0;
+  }
+  .outfit-shop-label{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:.85rem;
+    color:var(--ink);
+    margin:0 0 .8rem;
+    padding-top:.8rem;
+    border-top:1px dashed var(--line);
+  }
+
   @media (max-width:560px){
     .outfit-hero-card{grid-template-columns:1fr; gap:1rem;}
   }
@@ -1282,6 +1330,8 @@
 
       <div id="outfitResult" class="outfit-result" hidden>
         <div id="outfitHeader" class="outfit-header"></div>
+        <div id="outfitAvatarWrap" class="outfit-avatar-wrap"></div>
+        <p class="outfit-shop-label">🛍️ Compra el look real a UNIQLO</p>
         <div id="outfitHero"></div>
         <div id="outfitCards" class="outfit-cards"></div>
         <button id="outfitChangeGender" class="outfit-change-btn">↺ Canviar de gènere</button>
@@ -2316,6 +2366,102 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType){
   return { top, bottom, accessories };
 }
 
+/* ===== AVATAR GENERAT (SVG vectorial) ===== */
+// Genera una il·lustració d'un model vestint l'outfit, construïda 100% amb
+// codi (cap foto externa: no pot trencar-se, no depèn de cap servidor de
+// tercers, i sempre és coherent amb la banda de temperatura triada).
+function buildAvatarSVG({ gender, band, isRainy, topColor, bottomColor, accentColor, skin }) {
+  const isDona = gender === 'dona';
+  const topStyle = band === 'cold' ? 'puffer' : band === 'cool' ? 'thermal' : 'tee';
+  const shortSleeve = (band === 'warm' || band === 'hot');
+  const bottomStyle = band === 'hot' ? 'shorts' : 'pants';
+  skin = skin || '#e6b98c';
+
+  const hair = isDona
+    ? `<path class="avatar-layer" style="animation-delay:.05s" d="M78,38 Q110,8 142,38 Q150,50 148,70 L148,138 Q140,150 132,140 L132,64 Q110,50 88,64 L88,140 Q80,150 72,138 L72,70 Q70,50 78,38 Z" fill="#4a3626"/>`
+    : `<path class="avatar-layer" style="animation-delay:.05s" d="M77,42 Q110,10 143,42 Q145,56 138,58 Q110,36 82,58 Q75,56 77,42 Z" fill="#3b2a1e"/>`;
+
+  const legGap = 10;
+  const legW = 34;
+  const hipY = 214, kneeY = 272, ankleY = 338;
+  const bottomBottomY = bottomStyle === 'shorts' ? kneeY : ankleY;
+  const legsGarment = `
+    <path class="avatar-layer" style="animation-delay:.15s" d="M${110-legGap/2-legW},${hipY} h${legW} v${bottomBottomY-hipY} h-${legW} Z" fill="${bottomColor}"/>
+    <path class="avatar-layer" style="animation-delay:.15s" d="M${110+legGap/2},${hipY} h${legW} v${bottomBottomY-hipY} h-${legW} Z" fill="${bottomColor}"/>
+  `;
+  const legsSkin = bottomStyle === 'shorts' ? `
+    <rect class="avatar-layer" style="animation-delay:.2s" x="${110-legGap/2-legW+5}" y="${kneeY}" width="${legW-10}" height="${ankleY-kneeY}" rx="6" fill="${skin}"/>
+    <rect class="avatar-layer" style="animation-delay:.2s" x="${110+legGap/2+5}" y="${kneeY}" width="${legW-10}" height="${ankleY-kneeY}" rx="6" fill="${skin}"/>
+  ` : '';
+  const shoes = `
+    <rect class="avatar-layer" style="animation-delay:.3s" x="${110-legGap/2-legW-2}" y="${ankleY-6}" width="${legW+8}" height="16" rx="7" fill="#26282c"/>
+    <rect class="avatar-layer" style="animation-delay:.3s" x="${110+legGap/2-6}" y="${ankleY-6}" width="${legW+8}" height="16" rx="7" fill="#26282c"/>
+  `;
+
+  const shoulderY = 96, waistY = 208;
+  const torsoWide = topStyle === 'puffer';
+  const shX = torsoWide ? 46 : 62, shXEnd = torsoWide ? 174 : 158;
+  const waX = torsoWide ? 62 : 72, waXEnd = torsoWide ? 158 : 148;
+  const torso = `
+    <path class="avatar-layer" style="animation-delay:.22s" d="M${shX},${shoulderY} Q110,${shoulderY-10} ${shXEnd},${shoulderY} L${waXEnd},${waistY} Q110,${waistY+6} ${waX},${waistY} Z" fill="${topColor}"/>
+    ${topStyle === 'puffer' ? `
+      <line class="avatar-layer" style="animation-delay:.24s" x1="${shX+8}" y1="${shoulderY+28}" x2="${shXEnd-8}" y2="${shoulderY+30}" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+      <line class="avatar-layer" style="animation-delay:.25s" x1="${shX+10}" y1="${shoulderY+56}" x2="${shXEnd-10}" y2="${shoulderY+58}" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+      <line class="avatar-layer" style="animation-delay:.26s" x1="${shX+12}" y1="${shoulderY+84}" x2="${shXEnd-12}" y2="${shoulderY+86}" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+    ` : ''}
+  `;
+
+  const sleeveEndY = shortSleeve ? shoulderY + 42 : shoulderY + 92;
+  const handY = shoulderY + 92;
+  const arms = `
+    <path class="avatar-layer" style="animation-delay:.28s" d="M${shX+2},${shoulderY+6} Q${shX-14},${shoulderY+40} ${shX-8},${sleeveEndY} L${shX+10},${sleeveEndY} Q${shX+4},${shoulderY+40} ${shX+16},${shoulderY+6} Z" fill="${topColor}"/>
+    <path class="avatar-layer" style="animation-delay:.28s" d="M${shXEnd-2},${shoulderY+6} Q${shXEnd+14},${shoulderY+40} ${shXEnd+8},${sleeveEndY} L${shXEnd-10},${sleeveEndY} Q${shXEnd-4},${shoulderY+40} ${shXEnd-16},${shoulderY+6} Z" fill="${topColor}"/>
+    ${shortSleeve ? `
+      <rect class="avatar-layer" style="animation-delay:.3s" x="${shX-9}" y="${sleeveEndY-2}" width="16" height="${handY-sleeveEndY+14}" rx="7" fill="${skin}"/>
+      <rect class="avatar-layer" style="animation-delay:.3s" x="${shXEnd-7}" y="${sleeveEndY-2}" width="16" height="${handY-sleeveEndY+14}" rx="7" fill="${skin}"/>
+    ` : `
+      <circle class="avatar-layer" style="animation-delay:.3s" cx="${shX-1}" cy="${handY+10}" r="9" fill="${skin}"/>
+      <circle class="avatar-layer" style="animation-delay:.3s" cx="${shXEnd+1}" cy="${handY+10}" r="9" fill="${skin}"/>
+    `}
+  `;
+
+  const neckHead = `
+    <rect class="avatar-layer" style="animation-delay:.1s" x="100" y="76" width="20" height="18" fill="${skin}"/>
+    <circle class="avatar-layer" style="animation-delay:.02s" cx="110" cy="50" r="30" fill="${skin}"/>
+  `;
+
+  let accessories = '';
+  if (band === 'cold') {
+    accessories += `<path class="avatar-layer" style="animation-delay:.34s" d="M84,88 Q110,102 136,88 L138,100 Q110,116 82,100 Z" fill="${accentColor}"/>`;
+  }
+  if (band === 'hot' && !isRainy) {
+    accessories += `<path class="avatar-layer" style="animation-delay:.34s" d="M76,34 Q110,14 144,34 Q146,28 138,24 Q110,10 82,24 Q74,28 76,34 Z" fill="${accentColor}"/>`;
+  }
+  if (isRainy) {
+    accessories += `
+      <g class="avatar-layer" style="animation-delay:.36s">
+        <path d="M170,20 Q190,-4 210,20 Q195,12 170,20 Z" fill="${accentColor}"/>
+        <line x1="190" y1="18" x2="190" y2="60" stroke="${accentColor}" stroke-width="3" stroke-linecap="round"/>
+        <path d="M188,58 Q188,66 196,64" stroke="${accentColor}" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </g>
+    `;
+  }
+
+  return `<svg class="outfit-avatar-svg" viewBox="0 0 220 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Il·lustració de l'outfit recomanat">
+    ${legsGarment}${legsSkin}${shoes}${arms}${torso}${neckHead}${hair}${accessories}
+  </svg>`;
+}
+
+// Paleta de l'avatar segons la banda de temperatura (independent de les fotos reals,
+// pensada perquè es llegeixi bé com a il·lustració pròpia).
+const AVATAR_PALETTE = {
+  cold: { top: '#1e3a5f', bottom: '#3d4450', accent: '#8a2f3f' },
+  cool: { top: '#3d5266', bottom: '#4a4f57', accent: '#1e3a5f' },
+  mild: { top: '#2f9e94', bottom: '#8a7b5c', accent: '#1e3a5f' },
+  warm: { top: '#2f9e94', bottom: '#c9b896', accent: '#1e3a5f' },
+  hot:  { top: '#5fc7a3', bottom: '#6b7280', accent: '#1e3a5f' },
+};
+
 function renderOutfit(gender){
   if(!lastOfficeWeather) return;
   const tempC = lastOfficeWeather.temp != null ? lastOfficeWeather.temp : 18;
@@ -2337,6 +2483,22 @@ function renderOutfit(gender){
       <div class="outfit-header-desc">${lastOfficeWeather.desc || ''}</div>
     </div>
     <span class="outfit-header-gender">${gender === 'dona' ? '👗 Dona' : '👔 Home'}</span>
+  `;
+
+  // Avatar generat per codi (SVG): sempre disponible, sempre coherent amb la
+  // banda de temperatura i el gènere, sense dependre de cap imatge externa.
+  const isRainyNow = (lastOfficeWeather.precipPercent != null && lastOfficeWeather.precipPercent >= 40)
+    || RAIN_TYPES.includes(lastOfficeWeather.type);
+  const pal = AVATAR_PALETTE[band.key];
+  const avatarSvg = buildAvatarSVG({
+    gender, band: band.key, isRainy: isRainyNow,
+    topColor: pal.top, bottomColor: pal.bottom, accentColor: pal.accent,
+  });
+  document.getElementById('outfitAvatarWrap').innerHTML = `
+    <div>
+      ${avatarSvg}
+      <p class="outfit-avatar-caption">Il·lustració generada · ${band.label}${isRainyNow ? ' · amb pluja' : ''}</p>
+    </div>
   `;
 
   // Ho tornem a separar en DUES targetes independents (no apilades): les fotos
