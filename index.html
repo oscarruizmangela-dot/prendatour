@@ -775,6 +775,73 @@
     border:1px solid var(--line);
     border-radius:50%;
   }
+  .outfit-card-img{
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    border-radius:10px;
+    background:#fff;
+    border:1px solid var(--line);
+  }
+
+  /* HERO — el model vestit amb la foto real del producte */
+  .outfit-hero-card{
+    display:grid;
+    grid-template-columns:200px 1fr;
+    gap:1.4rem;
+    align-items:center;
+    background:linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.5));
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:1.2rem;
+    margin-bottom:1.3rem;
+    opacity:0;
+    animation:outfitCardIn .5s ease forwards;
+  }
+  .outfit-hero-media{
+    position:relative;
+    width:100%;
+    aspect-ratio:3/4;
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+    border:1px solid var(--line);
+    box-shadow:0 12px 28px -12px rgba(30,58,95,.35);
+  }
+  .outfit-hero-img{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .outfit-hero-fallback{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:4rem;
+    background:var(--paper-2);
+  }
+  .outfit-hero-badge{
+    position:absolute; top:.6rem; left:.6rem;
+    background:var(--navy); color:#fff;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.62rem; text-transform:uppercase; letter-spacing:.05em;
+    padding:.3rem .6rem;
+    border-radius:100px;
+  }
+  .outfit-hero-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:1.15rem;
+    color:var(--ink);
+    margin-bottom:.35rem;
+  }
+  .outfit-hero-desc{
+    font-family:'Inter',sans-serif;
+    font-size:.86rem;
+    color:var(--muted);
+    line-height:1.5;
+    margin-bottom:.7rem;
+  }
+
   .outfit-card-name{
     font-family:'Space Grotesk',sans-serif;
     font-weight:700;
@@ -819,6 +886,8 @@
     .outfit-panel{padding:1.2rem 1rem;}
     .outfit-header{flex-wrap:wrap;}
     .outfit-header-gender{margin-left:0;}
+    .outfit-hero-card{grid-template-columns:1fr; text-align:center;}
+    .outfit-hero-media{max-width:220px; margin:0 auto;}
   }
 
   /* MAP SECTION */
@@ -1177,6 +1246,7 @@
 
       <div id="outfitResult" class="outfit-result" hidden>
         <div id="outfitHeader" class="outfit-header"></div>
+        <div id="outfitHero"></div>
         <div id="outfitCards" class="outfit-cards"></div>
         <button id="outfitChangeGender" class="outfit-change-btn">↺ Canviar de gènere</button>
       </div>
@@ -2149,25 +2219,37 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType){
   const isRainy = (precipPercent != null && precipPercent >= 40) || RAIN_TYPES.includes(weatherType);
   const items = [];
 
+  // Fotos reals de producte (extretes de les fitxes oficials uniqlo.com/es), amb
+  // reserva automàtica a la icona si la imatge no arriba a carregar.
+  const IMG = {
+    ultraLightDown: gender === 'dona'
+      ? 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450310/item/goods_32_450310_3x4.jpg?width=600'
+      : 'https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470067/item/goods_19_470067_3x4.jpg?width=600',
+    heattechUltraWarm: gender === 'dona'
+      ? 'https://image.uniqlo.com/UQ/ST3/eu/imagesgoods/460406/item/eugoods_01_460406_3x4.jpg?width=600'
+      : 'https://image.uniqlo.com/UQ/ST3/eu/imagesgoods/479525/item/eugoods_09_479525_3x4.jpg?width=600',
+    airism: 'https://image.uniqlo.com/UQ/ST3/eu/imagesgoods/465185/item/eugoods_70_465185_3x4.jpg?width=600',
+  };
+
   if(band === 'cold'){
-    items.push({icon:'🧣', name:'HEATTECH Ultracàlid', desc:'La capa interior més càlida d\'UNIQLO — imprescindible amb fred intens.', q:`HEATTECH ultra calido ${g}`});
+    items.push({icon:'🧣', name:'HEATTECH Ultracàlid', desc:'La capa interior més càlida d\'UNIQLO — imprescindible amb fred intens.', q:`HEATTECH ultra calido ${g}`, img:IMG.heattechUltraWarm});
     items.push({icon:'🧶', name:'Jersei de punt gruixut', desc:'Segona capa que atrapa la calor sense abultar.', q:`jersey punto grueso ${g}`});
-    items.push({icon:'🧥', name:'Ultra Light Down', desc:'Abric acolchat, càlid i sorprenentment lleuger.', q:`ultra light down ${g}`});
+    items.push({icon:'🧥', name:'Ultra Light Down', desc:'Abric acolchat, càlid i sorprenentment lleuger.', q:`ultra light down ${g}`, img:IMG.ultraLightDown, hero:true});
     items.push({icon:'🧤', name:'Bufanda i guants', desc:'Accessoris tèrmics per rematar el look.', q:`bufanda guantes accesorios ${g}`});
   } else if(band === 'cool'){
-    items.push({icon:'🌡️', name:'HEATTECH Extra Càlid', desc:'Capa interior tèrmica pensada per a dies freds.', q:`HEATTECH extra calido ${g}`});
+    items.push({icon:'🌡️', name:'HEATTECH Ultracàlid', desc:'Capa interior tèrmica pensada per a dies freds.', q:`HEATTECH ultra calido ${g}`, img:IMG.heattechUltraWarm, hero:true});
     items.push({icon:'🧶', name:'Sudadera o jersei fi', desc:'Capa intermèdia còmoda per al dia a dia.', q:`sudadera jersey ${g}`});
-    items.push({icon:'🧥', name:'Chaqueta acolchada', desc:'Ultra Light Down o similar per a l\'exterior.', q:`chaqueta acolchada ligera ${g}`});
+    items.push({icon:'🧥', name:'Chaqueta acolchada', desc:'Ultra Light Down o similar per a l\'exterior.', q:`chaqueta acolchada ligera ${g}`, img:IMG.ultraLightDown});
   } else if(band === 'mild'){
-    items.push({icon:'👕', name:'Camisa o camiseta màniga llarga', desc:'Base còmoda per a temperatures fresques.', q:`camisa manga larga ${g}`});
+    items.push({icon:'👕', name:'Camisa o camiseta màniga llarga', desc:'Base còmoda per a temperatures fresques.', q:`camisa manga larga ${g}`, img:IMG.airism, hero:true});
     items.push({icon:'🧥', name:'Chaqueta BLOCKTECH', desc:'Lleugera i tallavent, ideal per anar i tornar de l\'oficina.', q:`chaqueta ligera blocktech ${g}`});
     items.push({icon:'👖', name:'Pantalón xino', desc:'Combina bé amb qualsevol part de dalt.', q:`pantalon chino ${g}`});
   } else if(band === 'warm'){
-    items.push({icon:'👕', name:'Camiseta AIRism', desc:'Teixit transpirable, fresc al tacte per a calor moderada.', q:`camiseta AIRism ${g}`});
+    items.push({icon:'👕', name:'Camiseta AIRism', desc:'Teixit transpirable, fresc al tacte per a calor moderada.', q:`camiseta AIRism ${g}`, img:IMG.airism, hero:true});
     items.push({icon:'👔', name:'Camisa lleugera o polo', desc:'Look net i fresc per a l\'oficina.', q:`camisa ligera polo ${g}`});
     items.push({icon:'👖', name:'Pantalón lleuger', desc:'Talls frescos per a un dia templat-càlid.', q:`pantalon ligero ${g}`});
   } else {
-    items.push({icon:'👕', name:'Camiseta AIRism', desc:'Frescor màxima per als dies més calorosos.', q:`camiseta AIRism ${g}`});
+    items.push({icon:'👕', name:'Camiseta AIRism', desc:'Frescor màxima per als dies més calorosos.', q:`camiseta AIRism ${g}`, img:IMG.airism, hero:true});
     items.push({icon:'🩳', name:'Pantalón curt o lleuger', desc:'Teixits transpirables per no passar calor.', q:`pantalon corto ligero ${g}`});
     items.push({icon:'🧢', name:'Gorra', desc:'Protecció extra si camines una estona al sol.', q:`gorra accesorios`});
   }
@@ -2184,6 +2266,8 @@ function renderOutfit(gender){
   const tempC = lastOfficeWeather.temp != null ? lastOfficeWeather.temp : 18;
   const band = outfitTempBand(tempC);
   const items = getOutfitItems(tempC, gender, lastOfficeWeather.precipPercent, lastOfficeWeather.type);
+  const heroItem = items.find(it => it.hero) || items[0];
+  const secondaryItems = items.filter(it => it !== heroItem);
 
   const panel = document.getElementById('outfitPanel');
   panel.className = 'outfit-panel ' + band.cssClass;
@@ -2202,9 +2286,30 @@ function renderOutfit(gender){
     <span class="outfit-header-gender">${gender === 'dona' ? '👗 Dona' : '👔 Home'}</span>
   `;
 
-  document.getElementById('outfitCards').innerHTML = items.map((it, i) => `
-    <div class="outfit-card${it.rain ? ' rain-flag' : ''}" style="animation-delay:${i * 0.08}s">
-      <div class="outfit-card-icon">${it.icon}</div>
+  // "Vestim el model": la peça protagonista es mostra en gran, amb la foto real
+  // del producte d'UNIQLO. Si la imatge no carrega, cau a la icona automàticament.
+  document.getElementById('outfitHero').innerHTML = heroItem ? `
+    <div class="outfit-hero-card">
+      <div class="outfit-hero-media">
+        ${heroItem.img ? `<img src="${heroItem.img}" alt="${heroItem.name}" class="outfit-hero-img"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'outfit-hero-fallback',textContent:'${heroItem.icon}'}))">`
+          : `<div class="outfit-hero-fallback">${heroItem.icon}</div>`}
+        <span class="outfit-hero-badge">Look d'avui</span>
+      </div>
+      <div class="outfit-hero-info">
+        <div class="outfit-hero-name">${heroItem.name}</div>
+        <div class="outfit-hero-desc">${heroItem.desc}</div>
+        <a class="outfit-card-link" href="${uniqloSearchUrl(heroItem.q)}" target="_blank" rel="noopener">Veure a UNIQLO ↗</a>
+      </div>
+    </div>
+  ` : '';
+
+  document.getElementById('outfitCards').innerHTML = secondaryItems.map((it, i) => `
+    <div class="outfit-card${it.rain ? ' rain-flag' : ''}" style="animation-delay:${(i+1) * 0.08}s">
+      ${it.img
+        ? `<img src="${it.img}" alt="${it.name}" class="outfit-card-img"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'outfit-card-icon',textContent:'${it.icon}'}))">`
+        : `<div class="outfit-card-icon">${it.icon}</div>`}
       <div class="outfit-card-name">${it.name}</div>
       <div class="outfit-card-desc">${it.desc}</div>
       <a class="outfit-card-link" href="${uniqloSearchUrl(it.q)}" target="_blank" rel="noopener">Veure a UNIQLO ↗</a>
