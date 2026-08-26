@@ -2454,8 +2454,6 @@ function getOutfitItems(tempC, gender, precipPercent, weatherType, store, compan
     accessories.push({icon:'🧥', name: companyType==='formal' ? 'Americana / blazer' : 'Chaqueta lleugera', desc:'Lleugera i tallavent, ideal per anar i tornar de l\'oficina.', q:`${companyType==='formal'?'americana blazer':'chaqueta ligera cortavientos'} ${g}`});
   } else if(band === 'warm'){
     if(companyType !== 'formal') accessories.push({icon:'👔', name:'Camisa lleugera o polo', desc:'Look net i fresc per a l\'oficina.', q:`camisa ligera polo ${g}`});
-  } else {
-    accessories.push({icon:'🧢', name:'Gorra', desc:'Protecció extra si camines una estona al sol.', q:`gorra accesorios`});
   }
 
   if(isRainy){
