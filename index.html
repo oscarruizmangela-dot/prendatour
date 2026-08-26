@@ -1366,7 +1366,7 @@
           <div id="outfitHeader" class="outfit-header"></div>
         </div>
         <details class="outfit-shop-details">
-          <summary class="outfit-shop-label">🛍️ Compra el look real a UNIQLO</summary>
+          <summary id="outfitShopLabel" class="outfit-shop-label">🛍️ Compra el look real a UNIQLO</summary>
           <div id="outfitHero" class="outfit-hero-compact"></div>
           <div id="outfitCards" class="outfit-cards-compact"></div>
         </details>
@@ -2604,6 +2604,7 @@ function renderOutfit(gender, companyType, store){
   const band = outfitTempBand(tempC);
   const { top, bottom, accessories } = getOutfitItems(tempC, gender, lastOfficeWeather.precipPercent, lastOfficeWeather.type, store, companyType);
   const storeLabel = { uniqlo:'UNIQLO', zara:'ZARA', hm:'H&M' }[store] || 'UNIQLO';
+  document.getElementById('outfitShopLabel').textContent = `🛍️ Compra el look real a ${storeLabel}`;
 
   const panel = document.getElementById('outfitPanel');
   panel.className = 'outfit-panel ' + band.cssClass;
